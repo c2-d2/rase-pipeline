@@ -10,7 +10,7 @@ from pprint import pprint
 import re
 import sys
 
-re_timestamp=re.compile(r'.*\.(\d{10})\..*')
+re_timestamp=re.compile(r'.*/(\d{10})\.tsv')
 
 HEADER_PRINTED=False
 
