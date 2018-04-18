@@ -15,7 +15,8 @@ rule all:
         [
             [
                 "reads/preprocessed/{}.fq.complete".format(e),
-                "prediction/{}.bam.complete".format(e)
+                "prediction/{}.bam.complete".format(e),
+                "prediction/{}.prediction.complete".format(e)
             ]
            for e in experiments
         ],
@@ -57,6 +58,38 @@ rule classify:
         """
 
 
+rule quantify_complete:
+    input:
+        t="prediction/{pref}.bam.complete"
+    output:
+        t="prediction/{pref}.quantify.complete"
+    params:
+        pref="{pref}",
+        bam="prediction/{pref}.bam",
+        index=index
+    #benchmark:
+        #"benchmarks/quantify__{pref}.{rest}.log"
+    shell:
+        """
+            mkdir -p "prediction/{params.pref}"
+
+            scripts/prophyle_quantify.py -p 'prediction/{params.pref}/' -i 60 "database/{params.index}/tree.nw" "{params.bam}" /dev/null
+
+            touch "{output.t}"
+        """
+
+
+rule predict:
+    input:
+        t="prediction/{pref}.bam.complete",
+    output:
+        t="prediction/{pref}.predict.complete",
+    benchmark:
+        "benchmarks/snapshots__{pref}.{rest}.log"
+    shell:
+        """
+        """
+
 
 #rule database:
 #    input:
@@ -76,3 +109,4 @@ rule decompress:
             prophyle decompress {input.gz} database/{params.index}
             touch "{output.t}"
         """
+
