@@ -17,7 +17,7 @@ rule all:
                 "reads/preprocessed/{}.fq.complete".format(e),
                 "prediction/{}.bam.complete".format(e),
                 "prediction/{}.quantify.complete".format(e),
-                #"prediction/{}.prediction.complete".format(e),
+                "prediction/{}.predict.complete".format(e),
             ]
            for e in experiments
         ],
@@ -80,13 +80,18 @@ rule quantify_complete:
 
 rule predict:
     input:
-        t="prediction/{pref}.bam.complete",
+        t="prediction/{pref}.quantify.complete",
     output:
         t="prediction/{pref}.predict.complete",
-    benchmark:
-        "benchmarks/snapshots__{pref}.{rest}.log"
+    params:
+        tsv="prediction/{pref}.predict.tsv",
+        index=index
+    #benchmark:
+    #    "benchmarks/snapshots__{pref}.{rest}.log"
     shell:
         """
+            scripts/rase_predict.py database/{params.index}.tsv prediction/{wildcards.pref}/*.tsv > "{params.tsv}"
+            touch "{output.t}"
         """
 
 
