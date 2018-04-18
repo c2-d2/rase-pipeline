@@ -5,7 +5,6 @@ import collections
 import copy
 import csv
 import ete3
-import numpy
 import os
 import re
 import sys
