@@ -18,6 +18,7 @@ rule all:
                 "prediction/{}.bam.complete".format(e),
                 "prediction/{}.quantify.complete".format(e),
                 "prediction/{}.predict.complete".format(e),
+                "plots/{}.timeline.pdf".format(e),
             ]
            for e in experiments
         ],
@@ -92,6 +93,19 @@ rule predict:
         """
             scripts/rase_predict.py database/{params.index}.tsv prediction/{wildcards.pref}/*.tsv > "{params.tsv}"
             touch "{output.t}"
+        """
+
+
+rule plot_timeline:
+    input:
+        t="prediction/{pref}.predict.complete",
+    output:
+        pdf="plots/{pref}.timeline.pdf",
+    params:
+        tsv="prediction/{pref}.predict.tsv",
+    shell:
+        """
+            ./scripts/plot_timeline.R {params.tsv} {output.pdf}
         """
 
 
