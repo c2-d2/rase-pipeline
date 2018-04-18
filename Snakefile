@@ -12,8 +12,15 @@ print("Experiments:", experiments)
 
 rule all:
     input:
-        ["reads/preprocessed/{}.fq.complete".format(e) for e in experiments],
-        "database/{}.complete".format(index)
+        [
+            [
+                "reads/preprocessed/{}.fq.complete".format(e),
+                "prediction/{}.bam.complete".format(e)
+            ]
+           for e in experiments
+        ],
+        ##"database/{}.complete".format(index)
+        #"prediction/{pref}.bam.complete"
     run:
         print("RASE is starting")
 
@@ -30,6 +37,25 @@ rule preprocess_reads:
             ./scripts/minion_rename_reads.py {input.fq} | paste -d '\t' - - - - | sort | perl -pe 's/\t/\n/g' > "{params.fq}"
             touch "{output.t}"
         """
+
+
+rule classify:
+    input:
+        t="reads/preprocessed/{pref}.fq.complete"
+    output:
+        t="prediction/{pref}.bam.complete",
+    params:
+        fq="reads/preprocessed/{pref}.fq",
+        bam="prediction/{pref}.bam",
+        index="database/{}".format(index)
+    shell:
+        """
+            prophyle classify -P "{params.index}" -m h1 "{params.fq}" \
+                | samtools view -b > "{params.bam}"
+
+            touch "{output.t}"
+        """
+
 
 
 #rule database:
