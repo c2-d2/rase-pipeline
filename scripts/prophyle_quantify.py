@@ -226,7 +226,7 @@ def main():
             dest='pref',
             metavar='STR',
             default=None,
-            help="Output prefix for samplings"
+            help="Output dir for samplings"
         )
 
     parser.add_argument('-i',
@@ -241,10 +241,6 @@ def main():
     args = parser.parse_args()
     bamreader=BamReader(args.bam)
     stats=Stats(args.tree)
-
-    if args.pref is not None:
-        pref_dir=os.path.dirname(args.pref)
-
 
     printed_timestamp=None
     for read_stats in bamreader.process_read():
@@ -262,7 +258,7 @@ def main():
                 while printed_timestamp + args.delta <= read_timestamp:
                     printed_timestamp+=args.delta
 
-                with open("{}.{}.tsv".format(args.pref, printed_timestamp), mode="w") as f:
+                with open("{}/{}.tsv".format(args.pref, printed_timestamp), mode="w") as f:
                     stats.print(file=f)
 
         stats.update_oneread(read_stats)

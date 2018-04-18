@@ -16,7 +16,8 @@ rule all:
             [
                 "reads/preprocessed/{}.fq.complete".format(e),
                 "prediction/{}.bam.complete".format(e),
-                "prediction/{}.prediction.complete".format(e)
+                "prediction/{}.quantify.complete".format(e),
+                #"prediction/{}.prediction.complete".format(e),
             ]
            for e in experiments
         ],
@@ -72,9 +73,7 @@ rule quantify_complete:
     shell:
         """
             mkdir -p "prediction/{params.pref}"
-
             scripts/prophyle_quantify.py -p 'prediction/{params.pref}/' -i 60 "database/{params.index}/tree.nw" "{params.bam}" /dev/null
-
             touch "{output.t}"
         """
 
