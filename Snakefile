@@ -103,8 +103,11 @@ rule plot_timeline:
         pdf="plots/{pref}.timeline.pdf",
     params:
         tsv="prediction/{pref}.predict.tsv",
+        index="database/{}".format(index),
+        pref="{pref}"
     shell:
         """
+            ./scripts/plot_selected_snapshots.py {params.index}.tsv prediction/{params.pref} 0 4 -1 plots/{params.pref}.snapshots.
             ./scripts/plot_timeline.R {params.tsv} {output.pdf}
         """
 
