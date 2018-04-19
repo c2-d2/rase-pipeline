@@ -6,20 +6,23 @@ import datetime
 import glob
 import os
 import re
+import subprocess
 import sys
 
-re_fn=re.compile(r'(.*?)\..*\.(\d+)\.pdf')
+re_fn=re.compile(r'.*?(\d+)\.tsv')
 
-def get_exp_inf(fn):
-    """Get experiment identifier.
+
+def extract_ts(fn):
+    """Extract timestamp from a file name
     """
-    bn=fn.split("/")[-1]
-    m=re_fn.match(bn)
-    exp,ts=m.groups()
-    return exp, int(ts)
+    m=re_fn.match(fn)
+    ts=m.group(1)
+    return ts
 
 
-def seconds_to_text(cs):
+def secs_to_text(cs):
+    """Convert time in seconds to a human readable string.
+    """
     v=collections.OrderedDict()
     v['s']=cs%60
     cs//=60
@@ -35,28 +38,34 @@ def seconds_to_text(cs):
     return "_".join(parts[::-1])
 
 
+def plot_snapshots(res_table, directory, indexes, outprefix, time0):
+    plotting_script=os.path.join(os.path.dirname(os.path.realpath(__file__)), "plot_snapshot.R")
+    plots=get_plot_info(directory, indexes, time0)
+    for fn, s, t in plots:
+        cmd=[plotting_script, res_table, fn, "{}{}.pdf".format(outprefix, t)]
+        print(cmd)
+        subprocess.run(cmd)
 
-def plot_snapshots(directory, indexes, outprefix):
-    exps=collections.defaultdict(list)
 
-    fns=glob.glob("../*.pdf")
-    for fn in fns:
-        #print(fn)
-        exp,ts=get_exp_inf(fn)
-        exps[exp].append([fn, ts])
+def get_plot_info(directory, indexes, time0):
+    fns=glob.glob(os.path.join(directory, "*.tsv"))
+    tsvs_abs={
+            fn: int(extract_ts(fn))
+            for fn in fns
+            }
+    min_ts=min(tsvs_abs.values())
+    tsvs_rel=[
+            [k, v-min_ts+time0]
+            for (k,v) in tsvs_abs.items()
+            ]
+    tsvs_rel.sort(key=lambda x: x[1])
 
-    for k in exps:
-        exps[k].sort(key=lambda x:x[0])
+    tr=[]
+    for i in indexes:
+        fn, sec = tsvs_rel[i]
+        tr.append((fn, sec, secs_to_text(sec)))
 
-        time0=exps[k][0][1]-first_ts
-
-        for exp, ts in exps[k]:
-            abs_ts=ts-time0
-            t=seconds_to_text(abs_ts)
-            #print(exp, k, t)
-            new_fn="{}.{}.pdf".format(k, t)
-            print("{} -> {}".format(exp, new_fn))
-            shutil.copy(exp,new_fn)
+    return tr
 
 
 def main():
@@ -66,8 +75,14 @@ def main():
             type=int,
             default=60,
             metavar='int',
-            dest='first',
+            dest='time0',
             help='First timestamp [60]',
+        )
+
+    parser.add_argument('res_table',
+            type=str,
+            metavar='res_table.tsv',
+            help='Resistance table',
         )
 
     parser.add_argument('dir',
@@ -77,7 +92,7 @@ def main():
         )
 
     parser.add_argument('indexes',
-            type=str,
+            type=int,
             metavar='index',
             nargs='+',
             help='0-based index of a snapshot (e.g., 0, -2, 6)',
@@ -89,10 +104,9 @@ def main():
             help='Output prefix',
         )
 
-
     args = parser.parse_args()
 
-    plot_snapshots(args.dir, args.indexes, args.outpref)
+    plot_snapshots(args.res_table, args.dir, args.indexes, args.outpref, args.time0)
 
 
 if __name__ == "__main__":
