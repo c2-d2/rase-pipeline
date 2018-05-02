@@ -244,6 +244,16 @@ PlotPG <- function(i) {
 
 
 
+# plot res block
+RedBox <- function(df2, threshold) {
+  mx=max(df2$time.mins)+15
+  rect(-1, -0.1, mx, threshold, col= rgb(1.0,0,0,alpha=0.1), border = "NA")
+}
+
+GreenBox <- function(df2, threshold) {
+  mx=max(df2$time.mins)+15
+  rect(-1, threshold, mx, 1.1, col= rgb(0,1.0,0,alpha=0.1), border = "NA")
+}
 
 #
 # plots curve for an antibiotic
@@ -251,6 +261,8 @@ PlotPG <- function(i) {
 PlotAntibiotic <- function(ant, i, is.last) {
   antcol = paste(ant, "_susc_score", sep = "")
   print(paste(ant, antcol))
+  
+  last_is_resistant=tail(df, n=1)[antcol]<=0.6
 
   par(bty = "l")
   margin(i)
@@ -309,9 +321,18 @@ PlotAntibiotic <- function(ant, i, is.last) {
       bty = "]",
       lwd = kLWD
     )
+    # mn=min(df2$time.mins / 60)-1
+    # mx=max(df2$time.mins / 60)+1
+    # rect(mn, -0.1, mx, 0.6, col= rgb(1.0,0,0,alpha=0.1), border = "NA")
+    # rect(mn, 0.6, mx, 1, col= rgb(0,1.0,0,alpha=0.1), border = "NA")
   }
 
-
+  if(last_is_resistant){
+    RedBox(df2, 0.6)
+  } else{
+    GreenBox(df2, 0.6)
+  }
+  
   ThresholdAbline(0.6)
   TimeAblines(kVerticalAblines)
 
