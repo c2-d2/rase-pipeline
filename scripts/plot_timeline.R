@@ -89,8 +89,6 @@ DfToAnts <- function(dataframe) {
   cols <- colnames(dataframe)
   antcols <- cols[grepl("_cat", cols)]
   ants <- gsub("_cat", "", antcols)
-  ants <- ants[ants != "CHL"]
-  ants <- ants[ants != "chl"]
   ants
 }
 
