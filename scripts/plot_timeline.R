@@ -12,7 +12,8 @@ kIsRStudio <- Sys.getenv("RSTUDIO") == "1"
 if (kIsRStudio) {
   src.file <- "../tests/predict.tsv"
 } else {
-  parser <- OptionParser(usage = "%prog [options] timeline.tsv plot.pdf")
+  parser <-
+    OptionParser(usage = "%prog [options] timeline.tsv plot.pdf")
   arguments <- parse_args(parser, positional_arguments = 2)
 
   opt <- arguments$options
@@ -35,6 +36,8 @@ if (kIsRStudio) {
 
 set.seed(42)
 
+kRLUnitRatio <- 60
+
 # first and second panels
 kFirstMinutes <- 15
 kLastHours <- 2
@@ -43,7 +46,7 @@ kLastHours <- 2
 kFirstSnapshotTime <- as.difftime(c(1), units = "mins")
 
 # remove endpoints more than ... far away
-kEndpointFilter=10
+kEndpointFilter <- 10
 
 kLWD <- 2
 
@@ -76,8 +79,8 @@ LoadTimelineData <- function(src.file) {
   stopifnot(sort(df$datetime) == df$datetime)
 
   # remove too distant end points
-  while(diff(tail(df, 2)$time) >= kEndpointFilter){
-    df=head(df,-1)
+  while (diff(tail(df, 2)$time) >= kEndpointFilter) {
+    df = head(df,-1)
   }
 
   df$inv.time.mins <- max(df$time.mins) - df$time.mins
@@ -126,6 +129,30 @@ margin <- function(i) {
   }
 }
 
+
+#
+# plot res color boxes
+#
+RedBox <- function(df2, threshold) {
+  mx <- max(df2$time.mins) + 15
+  rect(-mx,-0.1,
+       mx,
+       threshold,
+       col = rgb(1.0, 0, 0, alpha = 0.1),
+       border = "NA")
+}
+
+GreenBox <- function(df2, threshold) {
+  mx <- max(df2$time.mins) + 15
+  rect(-mx,
+       threshold,
+       mx,
+       1.1,
+       col = rgb(0, 1.0, 0, alpha = 0.1),
+       border = "NA")
+}
+
+
 #
 # plots curve for nb of reads
 #
@@ -144,7 +171,8 @@ PlotReads <- function(i) {
       xaxt = 'n',
       ylab = NA,
       xlab = NA,
-      lwd = kLWD
+      lwd = kLWD,
+      xaxs = "i"
     )
     mtext(
       "#reads (thousands)",
@@ -158,7 +186,7 @@ PlotReads <- function(i) {
   else {
     par(bty = "]")
     plot(
-      df2$time.mins / 60,
+      df2$time.mins / kRLUnitRatio,
       df2$read.count / 1000,
       xlim = r.xlim,
       ylim = c(0, max(df$read.count) / 1000),
@@ -168,7 +196,8 @@ PlotReads <- function(i) {
       yaxt = 'n',
       ylab = NA,
       xlab = NA,
-      lwd = kLWD
+      lwd = kLWD,
+      xaxs = "i"
     )
   }
   TimeAblines(kVerticalAblines[i])
@@ -180,6 +209,7 @@ PlotReads <- function(i) {
 #
 
 PlotPG <- function(i) {
+  last_pg_predicted = tail(df, n = 1)["PG_score"] >= 0.6
   margin(i)
   if (i == 1) {
     par(bty = "[")
@@ -193,7 +223,8 @@ PlotPG <- function(i) {
       ylab = NA,
       xlab = NA,
       xaxt = 'n',
-      lwd = kLWD
+      lwd = kLWD,
+      xaxs = "i"
     )
 
 
@@ -225,7 +256,7 @@ PlotPG <- function(i) {
   else {
     par(bty = "]")
     plot(
-      df2$time.mins / 60,
+      df2$time.mins / kRLUnitRatio,
       2 * df2$PG_score - 1,
       type = 'l',
       xlim = r.xlim,
@@ -235,25 +266,19 @@ PlotPG <- function(i) {
       las = 1,
       xaxt = 'n',
       yaxt = 'n',
-      lwd = kLWD
+      lwd = kLWD,
+      xaxs = "i"
     )
   }
   ThresholdAbline(0.6)
+  if (last_pg_predicted) {
+    GreenBox(df2, 0.6)
+  } else{
+    RedBox(df2, 0.6)
+  }
   TimeAblines(kVerticalAblines[i])
 }
 
-
-
-# plot res block
-RedBox <- function(df2, threshold) {
-  mx=max(df2$time.mins)+15
-  rect(-1, -0.1, mx, threshold, col= rgb(1.0,0,0,alpha=0.1), border = "NA")
-}
-
-GreenBox <- function(df2, threshold) {
-  mx=max(df2$time.mins)+15
-  rect(-1, threshold, mx, 1.1, col= rgb(0,1.0,0,alpha=0.1), border = "NA")
-}
 
 #
 # plots curve for an antibiotic
@@ -261,8 +286,8 @@ GreenBox <- function(df2, threshold) {
 PlotAntibiotic <- function(ant, i, is.last) {
   antcol = paste(ant, "_susc_score", sep = "")
   print(paste(ant, antcol))
-  
-  last_is_resistant=tail(df, n=1)[antcol]<=0.6
+
+  last_is_resistant = tail(df, n = 1)[antcol] <= 0.6
 
   par(bty = "l")
   margin(i)
@@ -279,7 +304,8 @@ PlotAntibiotic <- function(ant, i, is.last) {
       las = 1,
       xaxt = 'n',
       bty = "[",
-      lwd = kLWD
+      lwd = kLWD,
+      xaxs = "i"
     )
 
     mtext(
@@ -308,7 +334,7 @@ PlotAntibiotic <- function(ant, i, is.last) {
   }
   else{
     plot(
-      df2$time.mins / 60,
+      df2$time.mins / kRLUnitRatio,
       df2[, antcol],
       type = 'l',
       xlim = r.xlim,
@@ -319,20 +345,17 @@ PlotAntibiotic <- function(ant, i, is.last) {
       las = 1,
       xaxt = 'n',
       bty = "]",
-      lwd = kLWD
+      lwd = kLWD,
+      xaxs = "i"
     )
-    # mn=min(df2$time.mins / 60)-1
-    # mx=max(df2$time.mins / 60)+1
-    # rect(mn, -0.1, mx, 0.6, col= rgb(1.0,0,0,alpha=0.1), border = "NA")
-    # rect(mn, 0.6, mx, 1, col= rgb(0,1.0,0,alpha=0.1), border = "NA")
   }
 
-  if(last_is_resistant){
+  if (last_is_resistant) {
     RedBox(df2, 0.6)
   } else{
     GreenBox(df2, 0.6)
   }
-  
+
   ThresholdAbline(0.6)
   TimeAblines(kVerticalAblines[i])
 
@@ -366,13 +389,22 @@ PlotAntibiotic <- function(ant, i, is.last) {
 df <- LoadTimelineData(src.file)
 
 df1 <- df[df$time.min <= kFirstMinutes,]
-df2 <- df[df$inv.time.min <= 60 * kLastHours,]
+df2 <- df[df$inv.time.min <= kRLUnitRatio * kLastHours,]
 
 last.min <- max(df$time.mins)
 
-l.xlim <- c(0, kFirstMinutes)
-r.xlim <- c(last.min / 60 - kLastHours, last.min / 60)
-kVerticalAblines <- list(A=c(1.0, 5.0), B=c(last.min / 60))
+l.xlim1 <- -0.10 * kFirstMinutes # left padding
+l.xlim2 <- kFirstMinutes
+l.xlim <- c(l.xlim1, l.xlim2)
+
+r.xlim1 <-
+  max(l.xlim[2] / kRLUnitRatio, last.min / kRLUnitRatio - kLastHours)
+r.xlim2 <- last.min / kRLUnitRatio
+r.xlim2 <- r.xlim2 + (r.xlim2 - r.xlim1) * 0.05 # right padding
+r.xlim <- c(r.xlim1, r.xlim2)
+
+kVerticalAblines <-
+  list(A = c(1.0, 5.0), B = c(last.min / kRLUnitRatio))
 
 ants <- DfToAnts(df)
 
