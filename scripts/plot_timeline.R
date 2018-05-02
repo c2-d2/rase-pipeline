@@ -97,7 +97,7 @@ DfToAnts <- function(dataframe) {
 #
 TimeAblines <- function(x) {
   abline(
-    v = x,
+    v = as.numeric(unlist(x)),
     lty = 2,
     col = "grey",
     lwd = 2
@@ -171,7 +171,7 @@ PlotReads <- function(i) {
       lwd = kLWD
     )
   }
-  TimeAblines(kVerticalAblines)
+  TimeAblines(kVerticalAblines[i])
 }
 
 
@@ -239,7 +239,7 @@ PlotPG <- function(i) {
     )
   }
   ThresholdAbline(0.6)
-  TimeAblines(kVerticalAblines)
+  TimeAblines(kVerticalAblines[i])
 }
 
 
@@ -334,7 +334,7 @@ PlotAntibiotic <- function(ant, i, is.last) {
   }
   
   ThresholdAbline(0.6)
-  TimeAblines(kVerticalAblines)
+  TimeAblines(kVerticalAblines[i])
 
 
   # last row => plot labels
@@ -372,7 +372,7 @@ last.min <- max(df$time.mins)
 
 l.xlim <- c(0, kFirstMinutes)
 r.xlim <- c(last.min / 60 - kLastHours, last.min / 60)
-kVerticalAblines <- c(1, 5, last.min / 60)
+kVerticalAblines <- list(A=c(1.0, 5.0), B=c(last.min / 60))
 
 ants <- DfToAnts(df)
 
