@@ -47,15 +47,18 @@ kCatColors <- c("#ff0000", "#0000aa", '#00aa00')
 #############
 
 CatToColor <- function(cat) {
-  ifelse(cat == "R", kCatColors[1], (ifelse(cat == "S", kCatColors[2], kCatColors[3])))
+  catu=toupper(cat)
+  ifelse(catu == "R", kCatColors[1], (ifelse(catu == "S", kCatColors[2], kCatColors[3])))
 }
 
 CatToNumber <- function(cat) {
-  ifelse(cat == "R", 1, (ifelse(cat == "S", 2, 3)))
+  catu=toupper(cat)
+  ifelse(catu == "R", 1, (ifelse(catu == "S", 2, 3)))
 }
 
 CatToCatName <- function(cat) {
-  ifelse(cat == "S", "susceptible", (ifelse(cat ==
+  catu=toupper(cat)
+  ifelse(catu == "S", "susceptible", (ifelse(catu ==
                                               "R", "non-susceptible", "unknown")))
 }
 

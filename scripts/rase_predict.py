@@ -70,7 +70,7 @@ class RTbl:
                 self.pgset[pg].add(taxid)
 
                 for a in self.ants:
-                    cat=x[a+"_cat"]
+                    cat=x[a+"_cat"].upper()
                     assert cat in set(["NA", "S", "R"])
                     self.rcat[taxid][a]=cat
 
