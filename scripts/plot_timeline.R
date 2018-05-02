@@ -10,10 +10,7 @@ library(optparse)
 kIsRStudio <- Sys.getenv("RSTUDIO") == "1"
 
 if (kIsRStudio) {
-  src.exp <- "08_norwich_6766"
-  src.exp <- "01_sparc_01"
-  src.exp <- "06_phili_04"
-  src.file <- "tests/01_sparc_01.predict.tsv"
+  src.file <- "../tests/predict.tsv"
 } else {
   parser <- OptionParser(usage = "%prog [options] timeline.tsv plot.pdf")
   arguments <- parse_args(parser, positional_arguments = 2)
@@ -346,8 +343,6 @@ PlotAntibiotic <- function(ant, i, is.last) {
 ############
 # PLOTTING #
 ############
-
-#src.file <- paste("./input/snapshots/", src.exp, ".tsv", sep = "")
 
 df <- LoadTimelineData(src.file)
 
