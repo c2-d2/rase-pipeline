@@ -52,8 +52,17 @@ class RTbl:
             #print(dir(tsv_reader))
             for x in tsv_reader:
                 taxid=x['taxid']
-                serotype=x['serotype']
-                st=x['ST']
+
+                try:
+                    serotype=x['serotype']
+                except KeyError:
+                    serotype="NA"
+
+                try:
+                    st=x['ST']
+                except KeyError:
+                    st="NA"
+
                 pg=x['phylogroup']
                 self.pg[taxid]=pg
                 self.st[taxid]=st
