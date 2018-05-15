@@ -2,9 +2,17 @@ import glob
 import os
 import sys
 
+
 snakemake.shell.prefix("set -eo pipefail;")
 
-index="sparc1_k18"
+
+index_tsv=list(map(os.path.basename, glob.glob("database/*.tsv")))
+index_tar=list(map(os.path.basename, glob.glob("database/*.tar.gz")))
+assert len(index_tar)==1, "The database directory should contain exactly 1 TAR.GZ file (with a ProPhyle compressed index)"
+assert len(index_tsv)==1, "The database directory should contain exactly 1 TSV file (with the metadata)"
+index_tar=index_tar[0]
+index_tsv=index_tsv[0]
+index=index_tar.replace(".tar.gz", "")
 
 experiments=[os.path.basename(x[:-3]) for x in glob.glob("reads/*.fq")]
 print("Experiments:", experiments)
@@ -112,17 +120,15 @@ rule plot_timeline:
         """
 
 
-#rule database:
-#    input:
-#        t="database/.complete"
-
-
+"""
+Todo: add possible checking of index consistency
+"""
 rule decompress:
     output:
         t="database/{}.complete".format(index)
     input:
-        gz="database/{}.tar.gz".format(index),
-        tsv="database/{}.tsv".format(index)
+        gz="database/{}".format(index_tar),
+        tsv="database/{}".format(index_tsv)
     params:
         index=index
     shell:
