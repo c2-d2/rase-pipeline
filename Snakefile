@@ -43,6 +43,8 @@ rule preprocess_reads:
         t="reads/preprocessed/{pref}.fq.complete"
     params:
         fq="reads/preprocessed/{pref}.fq"
+    benchmark:
+        "benchmarks/{pref}.readprep.log"
     shell:
         """
             ./scripts/minion_rename_reads.py {input.fq} | paste -d '\t' - - - - | sort | perl -pe 's/\t/\n/g' > "{params.fq}"
@@ -60,6 +62,8 @@ rule classify:
         fq="reads/preprocessed/{pref}.fq",
         bam="prediction/{pref}.bam",
         index="database/{}".format(index)
+    benchmark:
+        "benchmarks/{pref}.classify.log"
     shell:
         """
             prophyle classify -P "{params.index}" -m h1 "{params.fq}" \
@@ -79,8 +83,8 @@ rule quantify_complete:
         pref="{pref}",
         bam="prediction/{pref}.bam",
         index=index
-    #benchmark:
-        #"benchmarks/quantify__{pref}.{rest}.log"
+    benchmark:
+        "benchmarks/{pref}.quantify.log"
     shell:
         """
             mkdir -p "prediction/{params.pref}"
@@ -98,8 +102,8 @@ rule predict:
     params:
         tsv="prediction/{pref}.predict.tsv",
         index=index
-    #benchmark:
-    #    "benchmarks/snapshots__{pref}.{rest}.log"
+    benchmark:
+        "benchmarks/{pref}.predict.log"
     shell:
         """
             scripts/rase_predict.py database/{params.index}.tsv prediction/{wildcards.pref}/*.tsv > "{params.tsv}"
@@ -113,6 +117,8 @@ rule plot_timeline:
         "database/{}.complete".format(index)
     output:
         pdf="plots/{pref}.timeline.pdf",
+    benchmark:
+        "benchmarks/{pref}.plot.log"
     params:
         tsv="prediction/{pref}.predict.tsv",
         index="database/{}".format(index),
@@ -133,6 +139,8 @@ rule decompress:
     input:
         gz="database/{}".format(index_tar),
         tsv="database/{}".format(index_tsv)
+    benchmark:
+        "benchmarks/decompress.log"
     shell:
         """
             prophyle decompress {input.gz} database
