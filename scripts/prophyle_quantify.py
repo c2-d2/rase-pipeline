@@ -146,10 +146,6 @@ class Stats:
             print(*x, sep="\t", file=file)
 
 
-
-        print("Finished: {} reads and {} non-propagated ({} propagated) assignments processed.".format(self.nb_reads, self.nb_nonprop_asgs, self.nb_asgs), file=sys.stderr)
-
-
 class BamReader:
     """BAM Reader.
 
@@ -203,6 +199,13 @@ class BamReader:
         return asgs
 
 
+def format_time(seconds):
+    minutes=seconds//60
+    hours=minutes//60
+    minutes-=60*hours
+    return "{}h{}m".format(hours, minutes)
+
+
 def main():
     parser = argparse.ArgumentParser(description="")
 
@@ -243,6 +246,7 @@ def main():
     stats=Stats(args.tree)
 
     printed_timestamp=None
+    first_timestamp=None
     for read_stats in bamreader.process_read():
         read_timestamp=int(bamreader.name.partition("_")[0])
 
@@ -258,8 +262,13 @@ def main():
                 while printed_timestamp + args.delta <= read_timestamp:
                     printed_timestamp+=args.delta
 
+                if first_timestamp is None:
+                    first_timestamp=printed_timestamp
+
                 with open("{}/{}.tsv".format(args.pref, printed_timestamp), mode="w") as f:
                     stats.print(file=f)
+                time=format_time(printed_timestamp-first_timestamp)
+                print("Time t={}: {} reads and {} non-propagated ({} propagated) assignments processed.".format(time, stats.nb_reads, stats.nb_nonprop_asgs, stats.nb_asgs), file=sys.stderr)
 
         stats.update_oneread(read_stats)
 
