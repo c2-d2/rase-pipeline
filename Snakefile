@@ -71,7 +71,8 @@ rule classify:
 
 rule quantify_complete:
     input:
-        "prediction/{pref}.bam.complete"
+        "prediction/{pref}.bam.complete",
+        "database/{}.complete".format(index),
     output:
         t="prediction/{pref}.quantify.complete"
     params:
@@ -91,6 +92,7 @@ rule quantify_complete:
 rule predict:
     input:
         "prediction/{pref}.quantify.complete",
+        "database/{}.complete".format(index),
     output:
         t="prediction/{pref}.predict.complete",
     params:
@@ -108,6 +110,7 @@ rule predict:
 rule plot_timeline:
     input:
         "prediction/{pref}.predict.complete",
+        "database/{}.complete".format(index)
     output:
         pdf="plots/{pref}.timeline.pdf",
     params:
