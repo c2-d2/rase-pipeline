@@ -130,11 +130,9 @@ rule decompress:
     input:
         gz="database/{}".format(index_tar),
         tsv="database/{}".format(index_tsv)
-    params:
-        index=index
     shell:
         """
-            prophyle decompress {input.gz} database/{params.index}
+            prophyle decompress {input.gz} database
             touch "{output.t}"
         """
 
