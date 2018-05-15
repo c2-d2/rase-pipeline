@@ -22,7 +22,7 @@ rule all:
     input:
         [
             [
-                "reads/preprocessed/{}.fq.complete".format(e),
+                "prediction/{}.fq.complete".format(e),
                 "prediction/{}.bam.complete".format(e),
                 "prediction/{}.quantify.complete".format(e),
                 "prediction/{}.predict.complete".format(e),
@@ -40,9 +40,9 @@ rule preprocess_reads:
     input:
         fq="reads/{pref}.fq"
     output:
-        t="reads/preprocessed/{pref}.fq.complete"
+        t="prediction/{pref}.fq.complete"
     params:
-        fq="reads/preprocessed/{pref}.fq"
+        fq="prediction/{pref}.fq"
     benchmark:
         "benchmarks/{pref}.readprep.log"
     shell:
@@ -55,11 +55,11 @@ rule preprocess_reads:
 rule classify:
     input:
         "database/{}.complete".format(index),
-        "reads/preprocessed/{pref}.fq.complete"
+        "prediction/{pref}.fq.complete"
     output:
         t="prediction/{pref}.bam.complete",
     params:
-        fq="reads/preprocessed/{pref}.fq",
+        fq="prediction/{pref}.fq",
         bam="prediction/{pref}.bam",
         index="database/{}".format(index)
     benchmark:
