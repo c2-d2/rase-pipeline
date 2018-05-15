@@ -52,7 +52,8 @@ rule preprocess_reads:
 
 rule classify:
     input:
-        t="reads/preprocessed/{pref}.fq.complete"
+        "database/{}.complete".format(index),
+        "reads/preprocessed/{pref}.fq.complete"
     output:
         t="prediction/{pref}.bam.complete",
     params:
@@ -70,7 +71,7 @@ rule classify:
 
 rule quantify_complete:
     input:
-        t="prediction/{pref}.bam.complete"
+        "prediction/{pref}.bam.complete"
     output:
         t="prediction/{pref}.quantify.complete"
     params:
@@ -89,7 +90,7 @@ rule quantify_complete:
 
 rule predict:
     input:
-        t="prediction/{pref}.quantify.complete",
+        "prediction/{pref}.quantify.complete",
     output:
         t="prediction/{pref}.predict.complete",
     params:
@@ -106,7 +107,7 @@ rule predict:
 
 rule plot_timeline:
     input:
-        t="prediction/{pref}.predict.complete",
+        "prediction/{pref}.predict.complete",
     output:
         pdf="plots/{pref}.timeline.pdf",
     params:
