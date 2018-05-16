@@ -1,4 +1,4 @@
-.PHONY: all help clean cleanall
+.PHONY: all help clean cleanall o2
 
 SHELL=/usr/bin/env bash -eo pipefail
 
@@ -14,6 +14,11 @@ all:
 replot:
 	rm plots/*.pdf
 	$(SM)
+
+o2:
+	snakemake --cores 9999 -p \
+		--cluster-config cluster.o2.json \
+		--cluster 'sbatch -p {cluster.queue} -c {cluster.n} -t {cluster.time} --mem={cluster.memory}'
 
 help: ## Print help message
 	@echo "$$(grep -hE '^\S+:.*##' $(MAKEFILE_LIST) | sed -e 's/:.*##\s*/:/' -e 's/^\(.\+\):\(.*\)/\\x1b[36m\1\\x1b[m:\2/' | column -c2 -t -s : | sort)"
