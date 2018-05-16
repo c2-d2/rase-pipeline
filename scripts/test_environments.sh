@@ -1,30 +1,22 @@
 #! /usr/bin/env bash
 
-
 set -e
 set -o pipefail
 
 # $1 - file
 # $2 - expected error code
-test () {
+test_script () {
     file="$1"
     experr="$2"
-    echo "Testing $x"
+    echo "Testing $1"
     tmp=$(mktemp)
     ((./$file 2>&1)> "$tmp" || (code=$? && exit $(($code - $experr))) ) || ( echo "...failed ($code)" && cat "$tmp"  && exit 1)
 }
 
 DIR=`dirname $0`
+export -f test_script
 
 # argparse should return exit status 2
-for x in "$DIR"/*.py; do
-    test "$x" 2 &
-done
-
-# R should exit with 1
-for x in *.R; do
-    test "$x" 1 &
-done
-
-wait
+ls "$DIR"/*.py | parallel test_script {} 2
+ls "$DIR"/*.R | parallel test_script {} 1
 
