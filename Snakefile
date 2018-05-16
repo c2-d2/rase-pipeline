@@ -16,6 +16,12 @@ index=index_tar.replace(".tar.gz", "")
 
 experiments=[os.path.basename(x[:-3]) for x in glob.glob("reads/*.fq")]
 print("Experiments:", experiments)
+if len(experiments)==0:
+    print("!!!! ", file=sys.stderr)
+    print("!!!! WARNING ", file=sys.stderr)
+    print("!!!! ", file=sys.stderr)
+    print("!!!! No FASTQ files provided", file=sys.stderr)
+    print("!!!! ", file=sys.stderr)
 
 
 rule all:
