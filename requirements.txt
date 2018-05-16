@@ -1,3 +1,4 @@
 prophyle
 ete3
 pysam
+snakemake
