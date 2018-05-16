@@ -29,7 +29,7 @@ clean: ## Clean
 	rm -f prediction/*.predict.{tsv,complete} prediction/*/*.tsv benchmarks/*.predict.log
 
 cleanall: clean
-	rm -f prediction/*.{fq,.fq.complete} benchmarks/*.readprep.log
-	rm -f prediction/*.{bam,.bam.complete} benchmarks/*.classify.log
+	rm -f prediction/*.{fq,fq.complete} benchmarks/*.readprep.log
+	rm -f prediction/*.{bam,bam.complete} benchmarks/*.classify.log
 	rm -fr database/*.complete $$(ls -d database/*/ || true) benchmarks/decompress.log
 
