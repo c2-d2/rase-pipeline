@@ -4,6 +4,7 @@ import sys
 
 
 snakemake.shell.prefix("set -eo pipefail;")
+snakemake.shell("(./scripts/test_environments.sh 2>&1) >/dev/null || ./scripts/test_environments.sh")
 
 
 index_tsv=list(map(os.path.basename, glob.glob("database/*.tsv")))
@@ -40,13 +41,10 @@ rule all:
         ],
         ##"database/{}.complete".format(index)
         #"prediction/{pref}.bam.complete"
-    run:
-        print("RASE is starting")
 
 
 rule preprocess_reads:
     input:
-        ".check.complete",
         fq="reads/{pref}.fq",
     output:
         t="prediction/{pref}.fq.complete"
@@ -87,7 +85,6 @@ rule quantify_complete:
     input:
         "prediction/{pref}.bam.complete",
         "database/{}.complete".format(index),
-        ".check.complete",
     output:
         t="prediction/{pref}.quantify.complete"
     params:
@@ -127,7 +124,6 @@ rule plot_timeline:
     input:
         "prediction/{pref}.predict.complete",
         "database/{}.complete".format(index),
-        ".check.complete",
     output:
         pdf="plots/{pref}.timeline.pdf",
     benchmark:
@@ -150,7 +146,6 @@ rule decompress:
     output:
         t="database/{}.complete".format(index)
     input:
-        ".check.complete",
         gz="database/{}".format(index_tar),
         tsv="database/{}".format(index_tsv),
     benchmark:
@@ -159,13 +154,4 @@ rule decompress:
         """
             prophyle decompress {input.gz} database
             touch "{output.t}"
-        """
-
-
-rule test_environments:
-    output:
-        t=temp(touch(".check.complete"))
-    shell:
-        """
-            ./scripts/test_environments.sh
         """
