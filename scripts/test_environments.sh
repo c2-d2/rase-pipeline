@@ -14,8 +14,10 @@ test () {
     ((./$file 2>&1)> "$tmp" || (code=$? && exit $(($code - $experr))) ) || ( echo "...failed ($code)" && cat "$tmp"  && exit 1)
 }
 
+DIR=`dirname $0`
+
 # argparse should return exit status 2
-for x in *.py; do
+for x in "$DIR"/*.py; do
     test "$x" 2
 done
 
