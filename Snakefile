@@ -49,8 +49,6 @@ rule preprocess_reads:
         t="prediction/{pref}.fq.complete"
     params:
         fq="prediction/{pref}.fq"
-    group:
-        "{pref}"
     benchmark:
         "benchmarks/{pref}.readprep.log"
     shell:
@@ -70,8 +68,6 @@ rule classify:
         fq="prediction/{pref}.fq",
         bam="prediction/{pref}.bam",
         index="database/{}".format(index)
-    group:
-        "{pref}"
     benchmark:
         "benchmarks/{pref}.classify.log"
     shell:
@@ -93,8 +89,6 @@ rule quantify_complete:
         pref="{pref}",
         bam="prediction/{pref}.bam",
         index=index
-    group:
-        "{pref}"
     benchmark:
         "benchmarks/{pref}.quantify.log"
     shell:
@@ -114,8 +108,6 @@ rule predict:
     params:
         tsv="prediction/{pref}.predict.tsv",
         index=index
-    group:
-        "{pref}"
     benchmark:
         "benchmarks/{pref}.predict.log"
     shell:
@@ -131,8 +123,6 @@ rule plot_timeline:
         "database/{}.complete".format(index)
     output:
         pdf="plots/{pref}.timeline.pdf",
-    group:
-        "{pref}"
     benchmark:
         "benchmarks/{pref}.plot.log"
     params:
