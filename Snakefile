@@ -24,6 +24,8 @@ if len(experiments)==0:
     print("!!!! ", file=sys.stderr)
 
 
+localrules: test_environments
+
 rule all:
     input:
         [
@@ -44,7 +46,8 @@ rule all:
 
 rule preprocess_reads:
     input:
-        fq="reads/{pref}.fq"
+        ".check.complete",
+        fq="reads/{pref}.fq",
     output:
         t="prediction/{pref}.fq.complete"
     params:
@@ -61,7 +64,8 @@ rule preprocess_reads:
 rule classify:
     input:
         "database/{}.complete".format(index),
-        "prediction/{pref}.fq.complete"
+        "prediction/{pref}.fq.complete",
+        ".check.complete",
     output:
         t="prediction/{pref}.bam.complete",
     params:
@@ -83,6 +87,7 @@ rule quantify_complete:
     input:
         "prediction/{pref}.bam.complete",
         "database/{}.complete".format(index),
+        ".check.complete",
     output:
         t="prediction/{pref}.quantify.complete"
     params:
@@ -103,6 +108,7 @@ rule predict:
     input:
         "prediction/{pref}.quantify.complete",
         "database/{}.complete".format(index),
+        ".check.complete",
     output:
         t="prediction/{pref}.predict.complete",
     params:
@@ -120,7 +126,8 @@ rule predict:
 rule plot_timeline:
     input:
         "prediction/{pref}.predict.complete",
-        "database/{}.complete".format(index)
+        "database/{}.complete".format(index),
+        ".check.complete",
     output:
         pdf="plots/{pref}.timeline.pdf",
     benchmark:
@@ -143,8 +150,9 @@ rule decompress:
     output:
         t="database/{}.complete".format(index)
     input:
+        ".check.complete",
         gz="database/{}".format(index_tar),
-        tsv="database/{}".format(index_tsv)
+        tsv="database/{}".format(index_tsv),
     benchmark:
         "benchmarks/decompress.log"
     shell:
@@ -153,3 +161,11 @@ rule decompress:
             touch "{output.t}"
         """
 
+
+rule test_environments:
+    output:
+        t=temp(touch(".check.complete"))
+    shell:
+        """
+            ./scripts/test_environments.sh
+        """
