@@ -7,13 +7,25 @@ snakemake.shell.prefix("set -eo pipefail;")
 snakemake.shell("(./scripts/test_environments.sh 2>&1) >/dev/null || ./scripts/test_environments.sh")
 
 
-index_tsv=list(map(os.path.basename, glob.glob("database/*.tsv")))
-index_tar=list(map(os.path.basename, glob.glob("database/*.tar.gz")))
-assert len(index_tar)==1, "The database directory should contain exactly 1 TAR.GZ file (with a ProPhyle compressed index)"
-assert len(index_tsv)==1, "The database directory should contain exactly 1 TSV file (with the metadata)"
-index_tar=index_tar[0]
-index_tsv=index_tsv[0]
-index=index_tar.replace(".tar.gz", "")
+# 1) Detect indexes
+
+def find_db_files(suffix):
+    return [os.path.basename(x).replace("."+suffix,"") for x in glob.glob("database/*.{}".format(suffix))]
+
+indexes_base_tsv=find_db_files("tsv")
+indexes_base_tar=find_db_files("tar.gz")
+indexes=set(indexes_base_tsv) & set(indexes_base_tar)
+print("Indexes:", indexes)
+if len(indexes)==0:
+    print("!!!! ", file=sys.stderr)
+    print("!!!! WARNING ", file=sys.stderr)
+    print("!!!! ", file=sys.stderr)
+    print("!!!! No indexes files provided", file=sys.stderr)
+    print("!!!! ", file=sys.stderr)
+
+
+
+# 2) Detect experiments
 
 experiments=[os.path.basename(x[:-3]) for x in glob.glob("reads/*.fq")]
 print("Experiments:", experiments)
@@ -31,13 +43,16 @@ rule all:
     input:
         [
             [
-                "prediction/{}.fq.complete".format(e),
-                "prediction/{}.bam.complete".format(e),
-                "prediction/{}.quantify.complete".format(e),
-                "prediction/{}.predict.complete".format(e),
-                "plots/{}.timeline.pdf".format(e),
+                [
+                    "prediction/.{}.fq.complete".format(e),
+                    "prediction/.{}__{}.bam.complete".format(e, i),
+                    "prediction/.{}__{}.quantify.complete".format(e, i),
+                    "prediction/.{}__{}.predict.complete".format(e, i),
+                    "plots/{}__{}.timeline.pdf".format(e, i),
+                ]
+                for i in indexes
             ]
-           for e in experiments
+            for e in experiments
         ],
         ##"database/{}.complete".format(index)
         #"prediction/{pref}.bam.complete"
@@ -47,7 +62,7 @@ rule preprocess_reads:
     input:
         fq="reads/{pref}.fq",
     output:
-        t="prediction/{pref}.fq.complete"
+        t=".prediction/{pref}.fq.complete"
     params:
         fq="prediction/{pref}.fq"
     benchmark:
@@ -61,15 +76,14 @@ rule preprocess_reads:
 
 rule classify:
     input:
-        "database/{}.complete".format(index),
-        "prediction/{pref}.fq.complete",
-        ".check.complete",
+        "database/.{index}.complete",
+        "prediction/.{pref}.fq.complete",
     output:
-        t="prediction/{pref}.bam.complete",
+        t="prediction/.{pref}__{index}.bam.complete",
     params:
         fq="prediction/{pref}.fq",
-        bam="prediction/{pref}.bam",
-        index="database/{}".format(index)
+        bam="prediction/{pref}__{index}.bam",
+        index="database/{index}__{index}"
     benchmark:
         "benchmarks/{pref}.classify.log"
     shell:
@@ -83,16 +97,15 @@ rule classify:
 
 rule quantify_complete:
     input:
-        "prediction/{pref}.bam.complete",
-        "database/{}.complete".format(index),
+        "prediction/{pref}__{index}.bam.complete",
+        "database/.{index}.complete",
     output:
-        t="prediction/{pref}.quantify.complete"
+        t="prediction/.{pref}__{index}.quantify.complete"
     params:
         pref="{pref}",
-        bam="prediction/{pref}.bam",
-        index=index
+        bam="prediction/{pref}__{index}.bam",
     benchmark:
-        "benchmarks/{pref}.quantify.log"
+        "benchmarks/{pref}__{index}.quantify.log"
     shell:
         """
             mkdir -p "prediction/{params.pref}"
@@ -103,16 +116,14 @@ rule quantify_complete:
 
 rule predict:
     input:
-        "prediction/{pref}.quantify.complete",
-        "database/{}.complete".format(index),
-        ".check.complete",
+        "prediction/.{pref}__{index}.quantify.complete",
+        "database/.{index}.complete",
     output:
-        t="prediction/{pref}.predict.complete",
+        t="prediction/.{pref}__{index}.predict.complete",
     params:
-        tsv="prediction/{pref}.predict.tsv",
-        index=index
+        tsv="prediction/{pref}__{index}.predict.tsv",
     benchmark:
-        "benchmarks/{pref}.predict.log"
+        "benchmarks/{pref}__{index}.predict.log"
     shell:
         """
             scripts/rase_predict.py database/{params.index}.tsv prediction/{wildcards.pref}/*.tsv > "{params.tsv}"
@@ -122,15 +133,15 @@ rule predict:
 
 rule plot_timeline:
     input:
-        "prediction/{pref}.predict.complete",
-        "database/{}.complete".format(index),
+        "prediction/.{pref}__{index}.predict.complete",
+        "database/.{index}.complete",
     output:
-        pdf="plots/{pref}.timeline.pdf",
+        pdf="plots/{pref}__{index}.timeline.pdf",
     benchmark:
-        "benchmarks/{pref}.plot.log"
+        "benchmarks/{pref}__{index}.plot.log"
     params:
-        tsv="prediction/{pref}.predict.tsv",
-        index="database/{}".format(index),
+        tsv="prediction/{pref}__{index}.predict.tsv",
+        index="database/{index}",
         pref="{pref}"
     shell:
         """
@@ -144,12 +155,12 @@ Todo: add possible checking of index consistency
 """
 rule decompress:
     output:
-        t="database/{}.complete".format(index)
+        t="database/.{index}.complete"
     input:
-        gz="database/{}".format(index_tar),
-        tsv="database/{}".format(index_tsv),
+        gz="database/{index}.tar.gz",
+        tsv="database/{index}.tsv",
     benchmark:
-        "benchmarks/decompress.log"
+        "benchmarks/decompress.{index}.log"
     shell:
         """
             prophyle decompress {input.gz} database
