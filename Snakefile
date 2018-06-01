@@ -102,14 +102,13 @@ rule quantify_complete:
     output:
         t="prediction/.{pref}__{index}.quantify.complete"
     params:
-        pref="{pref}",
         bam="prediction/{pref}__{index}.bam",
     benchmark:
         "benchmarks/{pref}__{index}.quantify.log"
     shell:
         """
-            mkdir -p "prediction/{params.pref}"
-            scripts/prophyle_quantify.py -p 'prediction/{params.pref}/' -i 60 "database/{params.index}/tree.nw" "{params.bam}" /dev/null
+            mkdir -p "prediction/{wildcards.pref}__{wildcards.index}"
+            scripts/prophyle_quantify.py -p 'prediction/{wildcards.pref}__{wildcards.index}/' -i 60 "database/{wildcards.index}/tree.nw" "{params.bam}" /dev/null
             touch "{output.t}"
         """
 
@@ -126,7 +125,7 @@ rule predict:
         "benchmarks/{pref}__{index}.predict.log"
     shell:
         """
-            scripts/rase_predict.py database/{params.index}.tsv prediction/{wildcards.pref}/*.tsv > "{params.tsv}"
+            scripts/rase_predict.py database/{wildcards.index}.tsv prediction/{wildcards.pref}__{wildcards.index}/*.tsv > "{params.tsv}"
             touch "{output.t}"
         """
 
@@ -145,7 +144,7 @@ rule plot_timeline:
         pref="{pref}"
     shell:
         """
-            ./scripts/plot_selected_snapshots.py {params.index}.tsv prediction/{params.pref} 0 4 -1 plots/{params.pref}.snapshots.
+            ./scripts/plot_selected_snapshots.py database/{wildcards.index}.tsv prediction/{wildcards.pref}__{wildcards.index}. 0 4 -1 plots/{wildcards.pref}__{wildcards.index}.snapshots.
             ./scripts/plot_timeline.R {params.tsv} {output.pdf}
         """
 
