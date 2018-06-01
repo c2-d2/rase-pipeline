@@ -3,7 +3,7 @@
 ## Prerequisites
 
 ```
-conda install prophyle ete3 pysam snakemake samtools parallel
+conda install prophyle ete3 pysam snakemake samtools parallel r-optparse
 ```
 
 ## Structure of directories
