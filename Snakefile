@@ -75,6 +75,7 @@ rule preprocess_reads:
 
 
 rule classify:
+    priority: 60
     input:
         "database/.{index}.complete",
         "prediction/.{pref}.fq.complete",
@@ -96,6 +97,7 @@ rule classify:
 
 
 rule quantify_complete:
+    priority: 70
     input:
         "prediction/.{pref}__{index}.bam.complete",
         "database/.{index}.complete",
@@ -114,6 +116,7 @@ rule quantify_complete:
 
 
 rule predict:
+    priority: 80
     input:
         "prediction/.{pref}__{index}.quantify.complete",
         "database/.{index}.complete",
@@ -131,6 +134,7 @@ rule predict:
 
 
 rule plot_timeline:
+    priority: 90
     input:
         "prediction/.{pref}__{index}.predict.complete",
         "database/.{index}.complete",
