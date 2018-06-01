@@ -176,7 +176,7 @@ class Tsv:
         #summary['PG1meas']='%s' % float('%.3g' % pg1_measmax)
         summary['PG2']=sorted_pgs[1]
         summary['PG2_meas']=round(pg2_measmax)
-        summary['PG_score']=round(pg1_measmax/(pg1_measmax+pg2_measmax)*1000)/1000
+        summary['PG_score']=2*(round(pg1_measmax/(pg1_measmax+pg2_measmax)*1000)/1000)-1
 
         summary['taxid']=predicted_taxid
         summary['serotype']=predicted_serotype
