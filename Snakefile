@@ -85,7 +85,7 @@ rule classify:
         bam="prediction/{pref}__{index}.bam",
         index="database/{index}"
     benchmark:
-        "benchmarks/{pref}.classify.log"
+        "benchmarks/{pref}__{index}.classify.log"
     shell:
         """
             prophyle classify -P "{params.index}" -m h1 "{params.fq}" \
