@@ -83,7 +83,7 @@ rule classify:
     params:
         fq="prediction/{pref}.fq",
         bam="prediction/{pref}__{index}.bam",
-        index="database/{index}__{index}"
+        index="database/{index}"
     benchmark:
         "benchmarks/{pref}.classify.log"
     shell:
