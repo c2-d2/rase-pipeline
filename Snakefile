@@ -144,7 +144,7 @@ rule plot_timeline:
         pref="{pref}"
     shell:
         """
-            ./scripts/plot_selected_snapshots.py database/{wildcards.index}.tsv prediction/{wildcards.pref}__{wildcards.index}. 0 4 -1 plots/{wildcards.pref}__{wildcards.index}.snapshots.
+            ./scripts/plot_selected_snapshots.py database/{wildcards.index}.tsv prediction/{wildcards.pref}__{wildcards.index} 0 4 -1 plots/{wildcards.pref}__{wildcards.index}.snapshots
             ./scripts/plot_timeline.R {params.tsv} {output.pdf}
         """
 
