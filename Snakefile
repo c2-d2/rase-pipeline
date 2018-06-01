@@ -62,7 +62,7 @@ rule preprocess_reads:
     input:
         fq="reads/{pref}.fq",
     output:
-        t=".prediction/{pref}.fq.complete"
+        t="prediction/.{pref}.fq.complete"
     params:
         fq="prediction/{pref}.fq"
     benchmark:
@@ -97,7 +97,7 @@ rule classify:
 
 rule quantify_complete:
     input:
-        "prediction/{pref}__{index}.bam.complete",
+        "prediction/.{pref}__{index}.bam.complete",
         "database/.{index}.complete",
     output:
         t="prediction/.{pref}__{index}.quantify.complete"
