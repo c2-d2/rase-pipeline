@@ -162,6 +162,7 @@ rule decompress:
         "benchmarks/decompress.{index}.log"
     shell:
         """
+            mkdir -p database/{wildcards.index}
             prophyle decompress {input.gz} database
             touch "{output.t}"
         """

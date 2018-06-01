@@ -30,6 +30,6 @@ clean: ## Clean
 
 cleanall: clean
 	rm -f prediction/*.{fq,fq.complete} benchmarks/*.readprep.log
-	rm -f prediction/*.{bam,bam.complete} benchmarks/*.classify.log
+	rm -f prediction/*.{bam,bam} prediction/.*.complete benchmarks/*.classify.log
 	rm -fr database/.*.complete $$(ls -d database/*/ 2>/dev/null || true) benchmarks/decompress.log
 
