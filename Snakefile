@@ -123,12 +123,15 @@ rule predict:
     output:
         t="prediction/.{pref}__{index}.predict.complete",
     params:
-        tsv="prediction/{pref}__{index}.predict.tsv",
+        tsv1="prediction/{pref}__{index}.predict_without_flags.tsv",
+        tsv2="prediction/{pref}__{index}.predict.tsv",
     benchmark:
         "benchmarks/{pref}__{index}.predict.log"
     shell:
         """
-            scripts/rase_predict.py database/{wildcards.index}.tsv prediction/{wildcards.pref}__{wildcards.index}/*.tsv > "{params.tsv}"
+            scripts/rase_predict.py database/{wildcards.index}.tsv prediction/{wildcards.pref}__{wildcards.index}/*.tsv > "{params.tsv1}"
+            scripts/prediction_add_flags.py  {params.tsv1} > {params.tsv2}
+            rm {params.tsv1}
             touch "{output.t}"
         """
 
