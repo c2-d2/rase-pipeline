@@ -20,7 +20,7 @@ def extract_flag_cols(cols):
                 re.compile(r"^serotype$"),
                 re.compile(r"^ST$"),
                 re.compile(r"^PG\d+$"),
-                re.compile(r"_cat$"),
+                re.compile(r"^.*_cat$"),
             ]
     flag_cols=[]
     for k in cols:
@@ -39,9 +39,10 @@ def load_tsv_dl(tsv_fn):
 
 
 def get_stabilization_point(tsv_dl, key):
-    final_value=tsv_dl[-1][key]
-    for i in range(len(tsv_dl), 0, -1):
-        if tsv_dl[i-1][key]!=final_value:
+    tsv_dl_=[collections.defaultdict(lambda: "")] + tsv_dl
+    final_value=tsv_dl_[-1][key]
+    for i in range(len(tsv_dl_)-1, -1, -1):
+        if tsv_dl_[i][key]!=final_value:
             break
     return i
 
@@ -53,7 +54,6 @@ def add_flags(tsv_fn):
     last_rec=tsv_dl[-1]
     stabilization_points={col: get_stabilization_point(tsv_dl, col) for col in flag_cols }
 
-    #print(tsv_dl)
     #add flags
     prev_rec=collections.defaultdict(lambda: "")
     for i, rec in enumerate(tsv_dl):
@@ -62,9 +62,10 @@ def add_flags(tsv_fn):
             flag_cols=extract_flag_cols(rec.keys())
         flags=[]
         for k in flag_cols:
+            if i==stabilization_points[k]:
+                flags.append('S:{}'.format(k))
+                assert rec[k]!=prev_rec[k]
             if rec[k]!=prev_rec[k]:
-                if i==stabilization_points[k]:
-                    flags.append('S:{}'.format(k))
                 if rec[k]==last_rec[k]:
                     # detected
                     flags.append('D:{}'.format(k))
