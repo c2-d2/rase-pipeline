@@ -46,7 +46,10 @@ kLastHours <- 2
 kFirstSnapshotTime <- as.difftime(c(1), units = "mins")
 
 # remove endpoints more than ... far away
-kEndpointFilter <- 10
+kEndpointFilter <- 3
+
+# color of flag letters
+kLetterCol = "blue"
 
 kLWD <- 2
 
@@ -98,15 +101,15 @@ DfToAnts <- function(dataframe) {
 DfFlag <- function(dataframe) {
   df.1 <- dataframe[grep("S:PG1",dataframe$flags),]
   df.1$character <- rep("1",nrow(df.1))
-  df.1$pos <- rep(0.1,nrow(df.1))
+  df.1$pos <- rep(0.15,nrow(df.1))
 
   df.2 <- dataframe[grep("S:PG2",dataframe$flags),]
   df.2$character <- rep("2",nrow(df.2))
-  df.2$pos <- rep(0.2,nrow(df.2))
+  df.2$pos <- rep(0.25,nrow(df.2))
 
   df.3 <- dataframe[grep("S:taxid",dataframe$flags),]
   df.3$character <- rep("T",nrow(df.3))
-  df.3$pos <- rep(0.3,nrow(df.3))
+  df.3$pos <- rep(0.35,nrow(df.3))
 
   df <- rbind(df.1, df.2, df.3)
   df
@@ -250,6 +253,7 @@ PlotPG <- function(i) {
       min(df1.flag$PG_score, 0.6)+df1.flag$pos,
       xlim = l.xlim,
       ylim = c(0, 1),
+      col = kLetterCol,
       pch=df1.flag$character,
       cex=2
     )
@@ -302,6 +306,7 @@ PlotPG <- function(i) {
       min(df2.flag$PG_score, 0.6)+df2.flag$pos,
       xlim = r.xlim,
       ylim = c(0, 1),
+      col = kLetterCol,
       pch=df2.flag$character,
       cex=2
     )
