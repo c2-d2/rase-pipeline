@@ -7,45 +7,73 @@ import os
 import re
 import sys
 
-# regular expressions for categories to be flagged
-res_flagging=[
-            re.compile(r"^taxid$"),
-            re.compile(r"^serotype$"),
-            re.compile(r"^ST$"),
-            re.compile(r"^PG\d+$"),
-            re.compile(r"_cat$"),
-        ]
+
+def get_cols(tsv_dl):
+    d=tsv_dl[0]
+    return [x for x in d.keys()]
+
+
+def extract_flag_cols(cols):
+    # regular expressions for categories to be flagged
+    res_flagging=[
+                re.compile(r"^taxid$"),
+                re.compile(r"^serotype$"),
+                re.compile(r"^ST$"),
+                re.compile(r"^PG\d+$"),
+                re.compile(r"_cat$"),
+            ]
+    flag_cols=[]
+    for k in cols:
+        for re_flagging in res_flagging:
+            if re_flagging.match(k):
+                flag_cols.append(k)
+                break
+
+    return flag_cols
+
+
+def load_tsv_dl(tsv_fn):
+    with open(tsv_fn) as f:
+        tr=[x for x in csv.DictReader(f, delimiter="\t")]
+    return tr
+
+
+def get_stabilization_point(tsv_dl, key):
+    final_value=tsv_dl[-1][key]
+    for i in range(len(tsv_dl), 0, -1):
+        if tsv_dl[i-1][key]!=final_value:
+            break
+    return i
 
 
 def add_flags(tsv_fn):
-    #load the last record
-    with open(tsv_fn) as f:
-        for last_rec in csv.DictReader(f, delimiter="\t"):
-            pass
+    tsv_dl=load_tsv_dl(tsv_fn)
+    cols=get_cols(tsv_dl)
+    flag_cols=extract_flag_cols(cols)
+    last_rec=tsv_dl[-1]
+    stabilization_points={col: get_stabilization_point(tsv_dl, col) for col in flag_cols }
 
+    #print(tsv_dl)
     #add flags
-    with open(tsv_fn) as f:
-        prev_rec=collections.defaultdict(lambda: "")
-        for i, rec in enumerate(csv.DictReader(f, delimiter="\t")):
-            if i==0:
-                print(*rec.keys(), "flags", sep="\t")
-                flag_cols=[]
-                for k in rec.keys():
-                    for re_flagging in res_flagging:
-                        if re_flagging.match(k):
-                            flag_cols.append(k)
-                            break
-            flags=[]
-            for k in flag_cols:
-                if rec[k]!=prev_rec[k]:
-                    if rec[k]==last_rec[k]:
-                        # detected
-                        flags.append(k+'_D')
-                    elif rec[k]==prev_rec[k]:
-                        # lost successfuly detected
-                        flags.append(k+'_L')
-            print(*rec.values(), flags, sep="\t")
-            prev_rec=rec
+    prev_rec=collections.defaultdict(lambda: "")
+    for i, rec in enumerate(tsv_dl):
+        if i==0:
+            print(*rec.keys(), "flags", sep="\t")
+            flag_cols=extract_flag_cols(rec.keys())
+        flags=[]
+        for k in flag_cols:
+            if rec[k]!=prev_rec[k]:
+                if i==stabilization_points[k]:
+                    flags.append('S:{}'.format(k))
+                if rec[k]==last_rec[k]:
+                    # detected
+                    flags.append('D:{}'.format(k))
+                elif prev_rec[k]==last_rec[k]:
+                    # lost successfuly detected
+                    flags.append('L:{}'.format(k))
+        flags_str=str(flags).replace("'","")
+        print(*rec.values(), flags_str, sep="\t")
+        prev_rec=rec
 
 
 def main():
@@ -59,6 +87,7 @@ def main():
 
     args = parser.parse_args()
     add_flags(args.file)
+
 
 if __name__ == "__main__":
     main()
