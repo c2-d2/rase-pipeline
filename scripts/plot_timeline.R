@@ -10,20 +10,20 @@ library(optparse)
 kIsRStudio <- Sys.getenv("RSTUDIO") == "1"
 
 if (kIsRStudio) {
-  src.file <- "../tests/predict.tsv"
+  src.file <- "../tests/predict3.tsv"
 } else {
   parser <-
     OptionParser(usage = "%prog [options] timeline.tsv plot.pdf")
   arguments <- parse_args(parser, positional_arguments = 2)
-  
+
   opt <- arguments$options
-  
+
   src.file <- arguments$args[1]
   out.file <- arguments$args[2]
-  
+
   kWidth <- 4
   kHeight <- 10
-  
+
   pdf(out.file,
       width = kWidth,
       height = kHeight)
@@ -46,7 +46,10 @@ kLastHours <- 2
 kFirstSnapshotTime <- as.difftime(c(1), units = "mins")
 
 # remove endpoints more than ... far away
-kEndpointFilter <- 10
+kEndpointFilter <- 3
+
+# color of flag letters
+kLetterCol = "blue"
 
 kLWD <- 2
 
@@ -71,20 +74,20 @@ LoadTimelineData <- function(src.file) {
   df$datetime <-
     as.POSIXct(strptime(df$datetime, "%Y-%m-%d %H:%M:%S"))
   first.datetime <- df$datetime[1] - kFirstSnapshotTime
-  
+
   df$time.mins <-
     difftime(df$datetime, first.datetime, units = "mins")
-  
+
   # is it really sorted? should be..
   stopifnot(sort(df$datetime) == df$datetime)
-  
+
   # remove too distant end points
   while (diff(tail(df, 2)$time) >= kEndpointFilter) {
     df <- head(df, -1)
   }
-  
+
   df$inv.time.mins <- max(df$time.mins) - df$time.mins
-  
+
   df
 }
 
@@ -93,6 +96,23 @@ DfToAnts <- function(dataframe) {
   antcols <- cols[grepl("_cat", cols)]
   ants <- gsub("_cat", "", antcols)
   ants
+}
+
+DfFlag <- function(dataframe) {
+  df.1 <- dataframe[grep("S:PG1",dataframe$flags),]
+  df.1$character <- rep("1",nrow(df.1))
+  df.1$pos <- rep(0.15,nrow(df.1))
+
+  df.2 <- dataframe[grep("S:PG2",dataframe$flags),]
+  df.2$character <- rep("2",nrow(df.2))
+  df.2$pos <- rep(0.25,nrow(df.2))
+
+  df.3 <- dataframe[grep("S:taxid",dataframe$flags),]
+  df.3$character <- rep("T",nrow(df.3))
+  df.3$pos <- rep(0.35,nrow(df.3))
+
+  df <- rbind(df.1, df.2, df.3)
+  df
 }
 
 #
@@ -208,7 +228,7 @@ PlotReads <- function(i) {
 #
 # plots curve for PG score
 #
-
+#df.flag=DfFlag(df)
 PlotPG <- function(i) {
   last_pg_predicted = tail(df, n = 1)["PG_score"] >= 0.6
   margin(i)
@@ -227,8 +247,19 @@ PlotPG <- function(i) {
       lwd = kLWD,
       xaxs = "i"
     )
-    
-    
+
+    points(
+      df1.flag$time.mins+0.1,
+      min(df1.flag$PG_score, 0.6)+df1.flag$pos,
+      xlim = l.xlim,
+      ylim = c(0, 1),
+      col = kLetterCol,
+      pch=df1.flag$character,
+      cex=2
+    )
+
+    #DfFlag
+
     mtext(
       "PG score",
       side = 2,
@@ -237,7 +268,7 @@ PlotPG <- function(i) {
       cex = 0.7,
       las = 3
     )
-    
+
     mtext(
       "fail",
       side = 2,
@@ -245,7 +276,7 @@ PlotPG <- function(i) {
       cex = kIndicSize,
       at = 0.3
     )
-    
+
     mtext(
       "pass",
       side = 2,
@@ -270,6 +301,16 @@ PlotPG <- function(i) {
       lwd = kLWD,
       xaxs = "i"
     )
+    points(
+      df2.flag$time.mins / kRLUnitRatio,
+      min(df2.flag$PG_score, 0.6)+df2.flag$pos,
+      xlim = r.xlim,
+      ylim = c(0, 1),
+      col = kLetterCol,
+      pch=df2.flag$character,
+      cex=2
+    )
+
   }
   ThresholdAbline(0.6)
   if (last_pg_predicted) {
@@ -287,9 +328,9 @@ PlotPG <- function(i) {
 PlotAntibiotic <- function(ant, i, is.last) {
   antcol <- paste(ant, "_susc_score", sep = "")
   print(paste(ant, antcol))
-  
+
   last_is_resistant <- tail(df, n = 1)[antcol] <= 0.6
-  
+
   par(bty = "l")
   margin(i)
   if (i == 1) {
@@ -308,7 +349,7 @@ PlotAntibiotic <- function(ant, i, is.last) {
       lwd = kLWD,
       xaxs = "i"
     )
-    
+
     mtext(
       paste(ant, "susc score"),
       side = 2,
@@ -317,7 +358,7 @@ PlotAntibiotic <- function(ant, i, is.last) {
       cex = 0.7,
       las = 3
     )
-    
+
     mtext(
       "non-susc",
       side = 2,
@@ -350,34 +391,34 @@ PlotAntibiotic <- function(ant, i, is.last) {
       xaxs = "i"
     )
   }
-  
+
   if (last_is_resistant) {
     RedBox(df2, 0.6)
   } else{
     GreenBox(df2, 0.6)
   }
-  
+
   ThresholdAbline(0.6)
   TimeAblines(kVerticalAblines[i])
-  
-  
+
+
   # last row => plot labels
   if (is.last) {
     if (i == 1) {
       axis(1, lwd = 0.5)
-      
+
       mtext("minutes",
             side = 1,
             line = 2)
-      
+
     }
     else {
       axis(1, lwd = 0.5)
-      
+
       mtext("hours",
             side = 1,
             line = 2)
-      
+
     }
   }
 }
@@ -391,6 +432,9 @@ df <- LoadTimelineData(src.file)
 
 df1 <- df[df$time.min <= kFirstMinutes, ]
 df2 <- df[df$inv.time.min <= kRLUnitRatio * kLastHours, ]
+
+df1.flag <- DfFlag(df1)
+df2.flag <- DfFlag(df2)
 
 last.min <- max(df$time.mins)
 
