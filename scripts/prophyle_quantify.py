@@ -127,15 +127,15 @@ class Stats:
                 [
                     n,
                     self.stats_count[n],
-                    1.0*self.stats_count[n]/self.nb_reads,
+                    1.0*self.stats_count[n]/self.nb_reads if self.nb_reads!=0 else 0,
                     self.stats_rlen[n],
-                    self.stats_rlen[n]/self.cumul_rlen,
+                    self.stats_rlen[n]/self.cumul_rlen if self.cumul_rlen!=0 else 0,
                     self.stats_rlensq[n],
                     self.stats_h1[n],
-                    self.stats_h1[n]/self.cumul_h1,
+                    self.stats_h1[n]/self.cumul_h1 if self.cumul_h1!=0 else 0,
                     self.stats_h1sq[n],
                     self.stats_c1[n],
-                    self.stats_c1[n]/self.cumul_c1,
+                    self.stats_c1[n]/self.cumul_c1 if self.cumul_c1!=0 else 0,
                     self.stats_c1sq[n],
                 ]
             )
@@ -198,6 +198,20 @@ class BamReader:
             last_name=self.name
         return asgs
 
+    def __del__(self):
+        self.samfile.close()
+
+
+def timestamp_from_qname(qname):
+    return int(qname.partition("_")[0])
+
+
+def get_first_timestamp(bam_fn):
+    return 0
+    bamreader=BamReader(bam_fn)
+    for read_stats in bamreader.process_read():
+        return timestamp_from_qname(bamreader.name)
+
 
 def format_time(seconds):
     minutes=seconds//60
@@ -245,32 +259,34 @@ def main():
     bamreader=BamReader(args.bam)
     stats=Stats(args.tree)
 
-    printed_timestamp=None
-    first_timestamp=None
+    # t=0 point hardcoded as the time of the first read minus 60 seconds
+    first_timestamp=get_first_timestamp(args.bam)-60
+    print_timestamp=first_timestamp
+
+    # 1) print empty statistics
+    f=open("{}/{}.tsv".format(args.pref, print_timestamp), mode="w")
+
+    # 2) iterate through individual reads, and update and print statistics
     for read_stats in bamreader.process_read():
-        read_timestamp=int(bamreader.name.partition("_")[0])
+        read_timestamp=timestamp_from_qname(bamreader.name)
 
         if args.pref is not None:
 
-            # initial timestamp
-            if printed_timestamp is None:
-                printed_timestamp=read_timestamp
+            if print_timestamp + args.delta <= read_timestamp:
+                # print current statistics, shift to the new time and open a new file
+                stats.print(file=f)
+                f.close()
+                while print_timestamp + args.delta < read_timestamp:
+                    print_timestamp+=args.delta
+                f=open("{}/{}.tsv".format(args.pref, print_timestamp), mode="w")
 
-            if printed_timestamp + args.delta <= read_timestamp:
-
-                # find the closest timestamp point
-                while printed_timestamp + args.delta <= read_timestamp:
-                    printed_timestamp+=args.delta
-
-                if first_timestamp is None:
-                    first_timestamp=printed_timestamp
-
-                with open("{}/{}.tsv".format(args.pref, printed_timestamp), mode="w") as f:
-                    stats.print(file=f)
-                time=format_time(printed_timestamp-first_timestamp)
+                time=format_time(print_timestamp-first_timestamp)
                 print("Time t={}: {} reads and {} non-propagated ({} propagated) assignments processed.".format(time, stats.nb_reads, stats.nb_nonprop_asgs, stats.nb_asgs), file=sys.stderr)
 
         stats.update_oneread(read_stats)
+
+    stats.print(file=f)
+    f.close()
 
     with open(args.tsv, mode="w") as f:
         stats.print(file=f)
