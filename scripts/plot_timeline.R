@@ -48,8 +48,9 @@ kFirstSnapshotTime <- as.difftime(c(1), units = "mins")
 # remove endpoints more than ... far away
 kEndpointFilter <- 3
 
-# color of flag letters
-kLetterCol = "blue"
+# flag letters
+kFlagCol <- "black"
+kFlagSize <- 2.0
 
 kLWD <- 2
 
@@ -83,7 +84,7 @@ LoadTimelineData <- function(src.file) {
 
   # remove too distant end points
   while (diff(tail(df, 2)$time) >= kEndpointFilter) {
-    df <- head(df, -1)
+    df <- head(df,-1)
   }
 
   df$inv.time.mins <- max(df$time.mins) - df$time.mins
@@ -98,18 +99,15 @@ DfToAnts <- function(dataframe) {
   ants
 }
 
-DfFlag <- function(dataframe) {
-  df.1 <- dataframe[grep("S:PG1",dataframe$flags),]
-  df.1$character <- rep("1",nrow(df.1))
-  df.1$pos <- rep(0.15,nrow(df.1))
+DfToFlags <- function(dataframe) {
+  df.1 <- dataframe[grep("S:PG1", dataframe$flags), ]
+  df.1$pch <- rep(4, nrow(df.1))
 
-  df.2 <- dataframe[grep("S:PG2",dataframe$flags),]
-  df.2$character <- rep("2",nrow(df.2))
-  df.2$pos <- rep(0.25,nrow(df.2))
+  df.2 <- dataframe[grep("S:PG2", dataframe$flags), ]
+  df.2$pch <- rep(3, nrow(df.2))
 
-  df.3 <- dataframe[grep("S:taxid",dataframe$flags),]
-  df.3$character <- rep("T",nrow(df.3))
-  df.3$pos <- rep(0.35,nrow(df.3))
+  df.3 <- dataframe[grep("S:taxid", dataframe$flags), ]
+  df.3$pch <- rep(0, nrow(df.3))
 
   df <- rbind(df.1, df.2, df.3)
   df
@@ -155,8 +153,7 @@ margin <- function(i) {
 #
 RedBox <- function(df2, threshold) {
   mx <- max(df2$time.mins) + 15
-  rect(-mx,
-       -0.1,
+  rect(-mx,-0.1,
        mx,
        threshold,
        col = rgb(1.0, 0, 0, alpha = 0.1),
@@ -180,13 +177,14 @@ GreenBox <- function(df2, threshold) {
 
 PlotReads <- function(i) {
   margin(i)
+  reads.ylim = c(0, max(df$read.count) / 1000)
   if (i == 1) {
     par(bty = "[")
     plot(
       df1$time.mins,
       df1$read.count / 1000,
       xlim = l.xlim,
-      ylim = c(0, max(df$read.count) / 1000),
+      ylim = reads.ylim,
       type = 'l',
       las = 1,
       xaxt = 'n',
@@ -194,6 +192,13 @@ PlotReads <- function(i) {
       xlab = NA,
       lwd = kLWD,
       xaxs = "i"
+    )
+    points(
+      df1.flag$time.mins,
+      df1.flag$read.count / 1000,
+      col = kFlagCol,
+      pch = df1.flag$pch,
+      cex = kFlagSize
     )
     mtext(
       "#reads (thousands)",
@@ -210,7 +215,7 @@ PlotReads <- function(i) {
       df2$time.mins / kRLUnitRatio,
       df2$read.count / 1000,
       xlim = r.xlim,
-      ylim = c(0, max(df$read.count) / 1000),
+      ylim = reads.ylim,
       type = 'l',
       las = 1,
       xaxt = 'n',
@@ -220,15 +225,30 @@ PlotReads <- function(i) {
       lwd = kLWD,
       xaxs = "i"
     )
+    points(
+      df2.flag$time.mins / kRLUnitRatio,
+      df2.flag$read.count / 1000,
+      col = kFlagCol,
+      pch = df2.flag$pch,
+      cex = kFlagSize
+    )
   }
+
   TimeAblines(kVerticalAblines[i])
+
+  if (i == 1) {
+    legend("topleft",
+           c("PG1 stab.", "PG2 stab.", "taxid stab."),
+           bg="white",
+           pch = c(4, 3, 0))
+  }
 }
 
 
 #
 # plots curve for PG score
 #
-#df.flag=DfFlag(df)
+#df.flag=DfToFlags(df)
 PlotPG <- function(i) {
   last_pg_predicted = tail(df, n = 1)["PG_score"] >= 0.6
   margin(i)
@@ -247,18 +267,6 @@ PlotPG <- function(i) {
       lwd = kLWD,
       xaxs = "i"
     )
-
-    points(
-      df1.flag$time.mins+0.1,
-      min(df1.flag$PG_score, 0.6)+df1.flag$pos,
-      xlim = l.xlim,
-      ylim = c(0, 1),
-      col = kLetterCol,
-      pch=df1.flag$character,
-      cex=2
-    )
-
-    #DfFlag
 
     mtext(
       "PG score",
@@ -301,16 +309,6 @@ PlotPG <- function(i) {
       lwd = kLWD,
       xaxs = "i"
     )
-    points(
-      df2.flag$time.mins / kRLUnitRatio,
-      min(df2.flag$PG_score, 0.6)+df2.flag$pos,
-      xlim = r.xlim,
-      ylim = c(0, 1),
-      col = kLetterCol,
-      pch=df2.flag$character,
-      cex=2
-    )
-
   }
   ThresholdAbline(0.6)
   if (last_pg_predicted) {
@@ -430,11 +428,11 @@ PlotAntibiotic <- function(ant, i, is.last) {
 
 df <- LoadTimelineData(src.file)
 
-df1 <- df[df$time.min <= kFirstMinutes, ]
-df2 <- df[df$inv.time.min <= kRLUnitRatio * kLastHours, ]
+df1 <- df[df$time.min <= kFirstMinutes,]
+df2 <- df[df$inv.time.min <= kRLUnitRatio * kLastHours,]
 
-df1.flag <- DfFlag(df1)
-df2.flag <- DfFlag(df2)
+df1.flag <- DfToFlags(df1)
+df2.flag <- DfToFlags(df2)
 
 last.min <- max(df$time.mins)
 
