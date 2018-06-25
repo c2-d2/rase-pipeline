@@ -49,17 +49,15 @@ class Stats:
         cumul_h1 (float): Cumulative weighted hit count.
         cumul_c1 (float): Cumulative weighted coverage.
 
-        stats_count (dict): nodename -> number of processed reads
-        stats_qlen (dict): nodename -> weighted qlen
-        stats_qlensq (dict): nodename -> weighted squared qlen
-        stats_h1 (dict): nodename -> squared h1
-        stats_h1sq (dict): nodename -> weighted squared h1
-        stats_c1 (dict): nodename -> squared c1
-        stats_c1sq (dict): nodename -> weighted squared c1
+        stats_count (dict): isolate -> number of processed reads
+        stats_qlen (dict): isolate -> weighted qlen
+        stats_h1 (dict): isolate -> squared h1
+        stats_c1 (dict): isolate -> squared c1
     """
 
     def __init__(self, tree_fn):
         self.tree=ete3.Tree(tree_fn, format=1)
+        self.isolates=sorted([isolate.name for isolate in self.tree])
         self.descending_isolates=self.precompute_descendants(self.tree)
 
         # stats for assigned reads
@@ -113,9 +111,9 @@ class Stats:
 
             for asg in asgs:
                 nname=asg["rname"]
-                self.update_cumuls(h1=asg["h1"], c1=asg["c1"], ln=asg["ln"], l=l)
-                for isolates in self.descending_isolates[nname]:
-                    self.update_strain_stats(isolates, h1=asg["h1"], c1=asg["c1"], ln=asg["ln"], l=l)
+                descending_isolates=self.descending_isolates[nname]
+                self.update_cumuls(h1=asg["h1"], c1=asg["c1"], ln=asg["ln"], weight=len(descending_isolates)/l)
+                self.update_strain_stats(descending_isolates, h1=asg["h1"], c1=asg["c1"], ln=asg["ln"], l=l)
 
         else:
             assert len(asgs)==1, "A single read shouldn't be reported as unassigned mutliple times (error: {})".format(asgs)
@@ -123,11 +121,10 @@ class Stats:
             self.nb_unassigned_reads+=1
             self.update_strain_stats([FAKE_ISOLATE_UNASSIGNED], h1=asg["h1"], c1=asg["c1"], ln=asg["ln"], l=l)
 
-    def update_cumuls(self, h1, c1, ln, l):
-        # h1 and c1 can be different for different assignments
-        self.cumul_h1_pow1+=1.0* h1 / l
-        self.cumul_c1_pow1+=1.0* c1 / l
-        self.cumul_ln_pow1+=1.0* ln / l
+    def update_cumuls(self, h1, c1, ln, weight):
+        self.cumul_h1_pow1+= h1 / weight
+        self.cumul_c1_pow1+= c1 / weight
+        self.cumul_ln_pow1+= ln / weight
 
     def update_strain_stats(self, isolates, h1, c1, ln, l):
         for isolate in isolates:
@@ -144,23 +141,22 @@ class Stats:
         """
         print("taxid", "count", "count_norm", "ln", "ln_norm", "h1", "h1_norm", "c1", "c1_norm", sep="\t", file=file)
         table=[]
-        for node in self.tree:
-            n=node.name
+        for isolate in self.isolates + [FAKE_ISOLATE_UNASSIGNED]:
             table.append(
                 [
-                    n,
-                    self.stats_h1_pow0[n],
-                    1.0*self.stats_h1_pow0[n]/self.nb_assigned_reads if self.nb_assigned_reads!=0 else 0,
-                    self.stats_ln_pow1[n],
-                    self.stats_ln_pow1[n]/self.cumul_ln_pow1 if self.cumul_ln_pow1!=0 else 0,
-                    self.stats_h1_pow1[n],
-                    self.stats_h1_pow1[n]/self.cumul_h1_pow1 if self.cumul_h1_pow1!=0 else 0,
-                    self.stats_c1_pow1[n],
-                    self.stats_c1_pow1[n]/self.cumul_c1_pow1 if self.cumul_c1_pow1!=0 else 0,
+                    isolate,
+                    self.stats_h1_pow0[isolate],
+                    1.0*self.stats_h1_pow0[isolate]/self.nb_assigned_reads if self.nb_assigned_reads!=0 else 0,
+                    self.stats_ln_pow1[isolate],
+                    self.stats_ln_pow1[isolate]/self.cumul_ln_pow1 if self.cumul_ln_pow1!=0 else 0,
+                    self.stats_h1_pow1[isolate],
+                    self.stats_h1_pow1[isolate]/self.cumul_h1_pow1 if self.cumul_h1_pow1!=0 else 0,
+                    self.stats_c1_pow1[isolate],
+                    self.stats_c1_pow1[isolate]/self.cumul_c1_pow1 if self.cumul_c1_pow1!=0 else 0,
                 ]
             )
 
-        table.sort(key=lambda x: x[7], reverse=True)
+        table.sort(key=lambda x: x[5], reverse=True)
 
         for x in table:
             print(*x, sep="\t", file=file)
