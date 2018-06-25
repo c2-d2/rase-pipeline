@@ -10,9 +10,8 @@ import ete3
 
 """Quantify assignments on the level of leaves.
 
-Assignment: Dictionary with entries name, rlen, h1, c1.
+Assignment: Dictionary with entries name, qlen, h1, c1.
 """
-
 
 
 def timestamp_from_qname(qname):
@@ -41,21 +40,21 @@ class Stats:
         tree_fn (str): Filename of the Newick tree.
 
     Attributes:
-        self.nb_reads (int): Number of processed reads.
-        self.nb_nonprop_asgs (int): Number of processed alignments (before propagation).
-        self.nb_asgs (int): Number of processed alignments (after propagation).
+        nb_reads (int): Number of processed reads.
+        nb_nonprop_asgs (int): Number of processed alignments (before propagation).
+        nb_asgs (int): Number of processed alignments (after propagation).
 
-        self.cumul_rlen (float): Cumulative weighted read length.
-        self.cumul_h1 (float): Cumulative weighted hit count.
-        self.cumul_c1 (float): Cumulative weighted coverage.
+        cumul_qlen (float): Cumulative weighted read length.
+        cumul_h1 (float): Cumulative weighted hit count.
+        cumul_c1 (float): Cumulative weighted coverage.
 
-        self.stats_count (dict): nodename -> number of processed reads
-        self.stats_rlen (dict): nodename -> weighted rlen
-        self.stats_rlensq (dict): nodename -> weighted squared rlen
-        self.stats_h1 (dict): nodename -> squared h1
-        self.stats_h1sq (dict): nodename -> weighted squared h1
-        self.stats_c1 (dict): nodename -> squared c1
-        self.stats_c1sq (dict): nodename -> weighted squared c1
+        stats_count (dict): nodename -> number of processed reads
+        stats_qlen (dict): nodename -> weighted qlen
+        stats_qlensq (dict): nodename -> weighted squared qlen
+        stats_h1 (dict): nodename -> squared h1
+        stats_h1sq (dict): nodename -> weighted squared h1
+        stats_c1 (dict): nodename -> squared c1
+        stats_c1sq (dict): nodename -> weighted squared c1
     """
 
     def __init__(self, tree_fn):
@@ -65,13 +64,13 @@ class Stats:
         self.nb_nonprop_asgs=0
         self.nb_asgs=0
 
-        self.cumul_rlen=0.0
+        self.cumul_qlen=0.0
         self.cumul_h1=0.0
         self.cumul_c1=0.0
 
         self.stats_count=collections.defaultdict(lambda:0.0)
-        self.stats_rlen=collections.defaultdict(lambda:0.0)
-        self.stats_rlensq=collections.defaultdict(lambda:0.0)
+        self.stats_qlen=collections.defaultdict(lambda:0.0)
+        self.stats_qlensq=collections.defaultdict(lambda:0.0)
         self.stats_h1=collections.defaultdict(lambda:0.0)
         self.stats_h1sq=collections.defaultdict(lambda:0.0)
         self.stats_c1=collections.defaultdict(lambda:0.0)
@@ -97,8 +96,12 @@ class Stats:
         asgs_leaves=[]
         for asg in asgs:
             for leafname in self.nodename_to_leave_nodenames[asg['rname']]:
-                    asg2=asg.copy()
-                    asg2["rname"]=leafname
+                    asg2={
+                        "rname": leafname,
+                        "qlen": asg["qlen"],
+                        "h1": asg["h1"],
+                        "c1": asg["c1"],
+                    }
                     asgs_leaves.append(asg2)
 
         return asgs_leaves
@@ -119,14 +122,14 @@ class Stats:
         self.nb_asgs+=l
 
         # in theory, h1 and c1 can be different for different assignments
-        self.cumul_rlen+=1.0*sum([x["rlen"] for x in asgs_leaves]) / l
+        self.cumul_qlen+=1.0*sum([x["qlen"] for x in asgs_leaves]) / l
         self.cumul_h1+=1.0*sum([x["h1"] for x in asgs_leaves]) / l
         self.cumul_c1+=1.0*sum([x["c1"] for x in asgs_leaves]) / l
 
         for asg in asgs_leaves:
             n=asg["rname"]
-            self.stats_rlen[n]+=1.0 * asg["rlen"] / l
-            self.stats_rlensq[n]+=1.0 * (asg["rlen"]**2) / l
+            self.stats_qlen[n]+=1.0 * asg["qlen"] / l
+            self.stats_qlensq[n]+=1.0 * (asg["qlen"]**2) / l
             self.stats_count[n]+=1.0 / l
             self.stats_h1[n]+=1.0*asg["h1"] / l
             self.stats_h1sq[n]+=1.0*(asg["h1"]**2) / l
@@ -149,9 +152,9 @@ class Stats:
                     n,
                     self.stats_count[n],
                     1.0*self.stats_count[n]/self.nb_reads if self.nb_reads!=0 else 0,
-                    self.stats_rlen[n],
-                    self.stats_rlen[n]/self.cumul_rlen if self.cumul_rlen!=0 else 0,
-                    self.stats_rlensq[n],
+                    self.stats_qlen[n],
+                    self.stats_qlen[n]/self.cumul_qlen if self.cumul_qlen!=0 else 0,
+                    self.stats_qlensq[n],
                     self.stats_h1[n],
                     self.stats_h1[n]/self.cumul_h1 if self.cumul_h1!=0 else 0,
                     self.stats_h1sq[n],
@@ -165,74 +168,6 @@ class Stats:
 
         for x in table:
             print(*x, sep="\t", file=file)
-
-
-class AssignmentReader:
-    """Iterator over individual ProPhyle assignments in a BAM file.
-
-    Assumes that it is possible to infer read lengths (either
-    from the ln tag, base sequence or cigars).
-
-    Params:
-        bam_fn (str): BAM file name.
-
-    Attributes:
-        samfile (pysam.AlignmentFile): PySAM file object.
-        asgs (list of dicts): Assignments (unfinished).
-    """
-
-    def __init__(self, bam_fn):
-        self.samfile = pysam.AlignmentFile(bam_fn, "rb")
-        self.alignments_iter = self.samfile.fetch(until_eof=True)
-
-        self.qname=None
-        self.last_qname=None
-        self.read_ln=None
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        # 1) acquire a new alignment from SAM
-        try:
-            alignment=next(self.alignments_iter)
-        except StopIteration:
-            raise StopIteration
-
-        # 2) re-compute basic read-related variables if necessary
-        self.qname=alignment.qname
-        if self.qname!=self.last_qname:
-            try:
-                self.read_ln=alignment.get_tag("ln")
-            except KeyError: # a ln tag is not present
-                if alignment.seq!="*":
-                    self.read_ln=len(alignment.seq)
-                else:
-                    #self.read_ln=read.infer_read_length()
-                    self.read_ln=read.infer_read_length()
-        self.last_qname=self.qname
-
-        # 3) infer assignment-related variables
-        if not alignment.is_unmapped:
-            asg = {
-                "qname": alignment.qname,
-                "rname": alignment.reference_name,
-                "rlen": self.read_ln,
-                "classified": True,
-                "h1": alignment.get_tag("h1"),
-                "c1": alignment.get_tag("c1"),
-            }
-        else:
-            asg = {
-                "qname": alignment.qname,
-                "rname": None,
-                "rlen": self.read_ln,
-                "classified": False,
-                "h1": None,
-                "c1": None,
-            }
-
-        return asg
 
 
 class AssignmentBlockReader:
@@ -274,6 +209,80 @@ class AssignmentBlockReader:
         buffer=self._buffer[:-1]
         self._buffer=self._buffer[-1:]
         return buffer
+
+
+class AssignmentReader:
+    """Iterator over individual ProPhyle assignments in a BAM file.
+
+    Assumes that it is possible to infer read lengths (either
+    from the ln tag, base sequence or cigars).
+
+    Params:
+        bam_fn (str): BAM file name.
+
+    Attributes:
+        samfile (pysam.AlignmentFile): PySAM file object.
+    """
+
+    def __init__(self, bam_fn):
+        self.samfile = pysam.AlignmentFile(bam_fn, "rb")
+        self.alignments_iter = self.samfile.fetch(until_eof=True)
+
+        self.qname=None
+        self.last_qname=None
+        self.read_ln=None
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        """Get next assignment.
+
+        Returns:
+            assignment (dict): A dict with the following keys: "rname", "qname", "qlen, "classified", "h1", "c1".
+        """
+
+        # 1) acquire a new alignment from SAM
+        try:
+            alignment=next(self.alignments_iter)
+        except StopIteration:
+            raise StopIteration
+
+        # 2) re-compute basic read-related variables if necessary
+        self.qname=alignment.qname
+        if self.qname!=self.last_qname:
+            try:
+                self.read_ln=alignment.get_tag("ln")
+            except KeyError: # a ln tag is not present
+                if alignment.seq!="*":
+                    self.read_ln=len(alignment.seq)
+                else:
+                    #self.read_ln=read.infer_read_length()
+                    self.read_ln=read.infer_read_length()
+        self.last_qname=self.qname
+
+        # 3) infer assignment-related variables
+        if not alignment.is_unmapped:
+            asg = {
+                "rname": alignment.reference_name,
+                "qname": alignment.qname,
+                "qlen": self.read_ln,
+                "classified": True,
+                "h1": alignment.get_tag("h1"),
+                "c1": alignment.get_tag("c1"),
+            }
+        else:
+            asg = {
+                "rname": None,
+                "qname": alignment.qname,
+                "qlen": self.read_ln,
+                "classified": False,
+                "h1": None,
+                "c1": None,
+            }
+            print(asg)
+
+        return asg
 
 
 def main():
