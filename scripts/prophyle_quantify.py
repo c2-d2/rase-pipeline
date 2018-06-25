@@ -13,6 +13,7 @@ import ete3
 Assignment: Dictionary with entries name, qlen, h1, c1.
 """
 
+FAKE_ISOLATE_UNASSIGNED="_unassigned_"
 
 def timestamp_from_qname(qname):
     return int(qname.partition("_")[0])
@@ -59,83 +60,82 @@ class Stats:
 
     def __init__(self, tree_fn):
         self.tree=ete3.Tree(tree_fn, format=1)
+        self.descending_isolates=self.precompute_descendants(self.tree)
 
-        self.nb_reads=0
+        # stats for assigned reads
+        self.nb_assigned_reads=0
         self.nb_nonprop_asgs=0
         self.nb_asgs=0
 
-        self.cumul_qlen=0.0
-        self.cumul_h1=0.0
-        self.cumul_c1=0.0
+        # stats for unassigned reads
+        self.nb_unassigned_reads=0
+       
+        # cumulative statistics for assigned reads
+        self.cumul_h1_pow1=0.0
+        self.cumul_c1_pow1=0.0
+        self.cumul_ln_pow1=0.0
 
-        self.stats_count=collections.defaultdict(lambda:0.0)
-        self.stats_qlen=collections.defaultdict(lambda:0.0)
-        self.stats_qlensq=collections.defaultdict(lambda:0.0)
-        self.stats_h1=collections.defaultdict(lambda:0.0)
-        self.stats_h1sq=collections.defaultdict(lambda:0.0)
-        self.stats_c1=collections.defaultdict(lambda:0.0)
-        self.stats_c1sq=collections.defaultdict(lambda:0.0)
+        # statistics for individual isolates, "_unassigned_" for unassigned
+        self.stats_h1_pow0=collections.defaultdict(lambda:0.0)
+        self.stats_h1_pow1=collections.defaultdict(lambda:0.0)
+        self.stats_c1_pow1=collections.defaultdict(lambda:0.0)
+        self.stats_ln_pow1=collections.defaultdict(lambda:0.0)
 
-        self.nodename_to_leave_nodenames=collections.defaultdict(lambda:[])
-        for root in list(self.tree.traverse())+[self.tree]:
-            self.nodename_to_leave_nodenames[root.name]=set([x.name for x in root])
+    def precompute_descendants(self, tree):
+        descending_leaves={}
+        for root in list(tree.traverse())+[tree]:
+            descending_isolates[root.name]=set([isolate.name for isolate in root])
+        return descending_leaves
 
-        #print(self.nodename_to_leave_nodenames, file=sys.stderr)
+    def get_number_of_assigned_strains(self, asgs):
+        l=0
+        for asg in asgs: 
+            l+=len(self.descending_isolates[asg["rname"]])
+        return l
 
-
-    def propagate_asgs_leaves(self, asgs):
-        """Propagate assignments of a single from nodes to leaves.
-
-        Params:
-            asgs (list of dicts): Assignments.
-
-        Return:
-            asgs_leaves (list of dicts): Assignments propagated to the leaves.
-        """
-
-        asgs_leaves=[]
-        for asg in asgs:
-            for leafname in self.nodename_to_leave_nodenames[asg['rname']]:
-                    asg2={
-                        "rname": leafname,
-                        "qlen": asg["qlen"],
-                        "h1": asg["h1"],
-                        "c1": asg["c1"],
-                    }
-                    asgs_leaves.append(asg2)
-
-        return asgs_leaves
-
-
-    def update_oneread(self, asgs):
+    def update_from_one_read(self, asgs):
         """Update statistics from assignments of a single read.
 
         Params:
             asgs (dict): Assignments.
         """
 
-        self.nb_nonprop_asgs+=len(asgs)
-        asgs_leaves=self.propagate_asgs_leaves(asgs)
-        l=len(asgs_leaves)
+        assert len(asgs)>0, "No assignments provided"
 
-        self.nb_reads+=1
-        self.nb_asgs+=l
+        is_assigned=asgs[0]["assigned"]
 
-        # in theory, h1 and c1 can be different for different assignments
-        self.cumul_qlen+=1.0*sum([x["qlen"] for x in asgs_leaves]) / l
-        self.cumul_h1+=1.0*sum([x["h1"] for x in asgs_leaves]) / l
-        self.cumul_c1+=1.0*sum([x["c1"] for x in asgs_leaves]) / l
+        if is_assigned:
+            l=self.get_number_of_assigned_strains(asgs)
+            
+            self.nb_assigned_reads+=1
+            self.nb_nonprop_asgs+=len(asgs)
+            self.nb_asgs+=l
 
-        for asg in asgs_leaves:
-            n=asg["rname"]
-            self.stats_qlen[n]+=1.0 * asg["qlen"] / l
-            self.stats_qlensq[n]+=1.0 * (asg["qlen"]**2) / l
-            self.stats_count[n]+=1.0 / l
-            self.stats_h1[n]+=1.0*asg["h1"] / l
-            self.stats_h1sq[n]+=1.0*(asg["h1"]**2) / l
-            self.stats_c1[n]+=1.0*asg["c1"] / l
-            self.stats_c1sq[n]+=1.0*(asg["c1"]**2) / l
+            for asg in asgs:
+                nname=assignment["rname"]
+                update_cumuls(self, h1=asg["h1"], c1=asg["c1"], ln=asg["ln"], l=l)
+                for isolate in self.descending_isolates[nname]:
+                    update_strain_stats(self, isolates, h1=asg["h1"], c1=asg["c1"], ln=asg["ln"], l=l)
 
+        else:
+            assert len(asgs)==1, "A single read shouldn't be reported as unassigned mutliple times (error: {})".format(asgs)
+            asg=asgs[0]
+            self.nb_unassigned_reads+=1
+            self.update_strain_stats(self, [FAKE_ISOLATE_UNASSIGNED], h1=asg["h1"], c1=asg["c1"], ln=asg["ln"], l=l)
+
+    def update_cumuls(self, isolates, h1, c1, ln, l):
+        # h1 and c1 can be different for different assignments
+        n_iso=len(isolates)
+        self.cumul_h1_pow1+=1.0* h1 * (n_iso / l)
+        self.cumul_c1_pow1+=1.0* c1 * (n_iso / l)
+        self.cumul_ln_pow1+=1.0* ln * (n_iso / l)
+
+    def update_strain_stats(self, isolates, h1, c1, ln, l):
+        for isolate in isolates:
+            self.stats_h1_pow0[isolate]+=1.0 / l
+            self.stats_h1_pow1[isolate]+=1.0 * (h1 / l)
+            self.stats_c1_pow1[isolate]+=1.0 * (c1 / l)
+            self.stats_ln_pow1[isolate]+=1.0 * (ln / l)
 
     def print(self, file):
         """Print statistics.
@@ -143,7 +143,7 @@ class Stats:
         Args:
             file (file): Output file.
         """
-        print("taxid", "count", "count_norm", "len", "len_norm", "lensq", "h1", "h1_norm", "h1sq", "c1", "c1_norm", "c1sq", sep="\t", file=file)
+        print("taxid", "count", "count_norm", "ln", "ln_norm", "h1", "h1_norm", "c1", "c1_norm", sep="\t", file=file)
         table=[]
         for node in self.tree:
             n=node.name
@@ -151,16 +151,13 @@ class Stats:
                 [
                     n,
                     self.stats_count[n],
-                    1.0*self.stats_count[n]/self.nb_reads if self.nb_reads!=0 else 0,
-                    self.stats_qlen[n],
-                    self.stats_qlen[n]/self.cumul_qlen if self.cumul_qlen!=0 else 0,
-                    self.stats_qlensq[n],
-                    self.stats_h1[n],
-                    self.stats_h1[n]/self.cumul_h1 if self.cumul_h1!=0 else 0,
-                    self.stats_h1sq[n],
-                    self.stats_c1[n],
-                    self.stats_c1[n]/self.cumul_c1 if self.cumul_c1!=0 else 0,
-                    self.stats_c1sq[n],
+                    1.0*self.stats_h1_pow0[n]/self.nb_reads if self.nb_reads!=0 else 0,
+                    self.stats_ln[n],
+                    self.stats_ln_pow1[n]/self.cumul_ln_pow1 if self.cumul_ln_pow1!=0 else 0,
+                    self.stats_h1_pow1[n],
+                    self.stats_h1_pow1[n]/self.cumul_h1_pow1 if self.cumul_h1_pow1!=0 else 0,
+                    self.stats_c1_pow1[n],
+                    self.stats_c1_pow1[n]/self.cumul_c1_pow1 if self.cumul_c1_pow1!=0 else 0,
                 ]
             )
 
@@ -239,7 +236,7 @@ class AssignmentReader:
         """Get next assignment.
 
         Returns:
-            assignment (dict): A dict with the following keys: "rname", "qname", "qlen, "classified", "h1", "c1".
+            assignment (dict): A dict with the following keys: "rname", "qname", "qlen, "assigned", "h1", "c1".
         """
 
         # 1) acquire a new alignment from SAM
@@ -267,7 +264,7 @@ class AssignmentReader:
                 "rname": alignment.reference_name,
                 "qname": alignment.qname,
                 "qlen": self.read_ln,
-                "classified": True,
+                "assigned": True,
                 "h1": alignment.get_tag("h1"),
                 "c1": alignment.get_tag("c1"),
             }
@@ -276,7 +273,7 @@ class AssignmentReader:
                 "rname": None,
                 "qname": alignment.qname,
                 "qlen": self.read_ln,
-                "classified": False,
+                "assigned": False,
                 "h1": None,
                 "c1": None,
             }
@@ -349,7 +346,7 @@ def main():
                 time=format_time(print_timestamp-first_timestamp)
                 print("Time t={}: {} reads and {} non-propagated ({} propagated) assignments processed.".format(time, stats.nb_reads, stats.nb_nonprop_asgs, stats.nb_asgs), file=sys.stderr)
 
-        stats.update_oneread(read_stats)
+        stats.update_from_one_read(read_stats)
 
     stats.print(file=f)
     f.close()
