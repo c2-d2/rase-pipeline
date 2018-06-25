@@ -84,7 +84,7 @@ class Stats:
     def precompute_descendants(self, tree):
         descending_leaves={}
         for root in list(tree.traverse())+[tree]:
-            descending_isolates[root.name]=set([isolate.name for isolate in root])
+            descending_leaves[root.name]=set([isolate.name for isolate in root])
         return descending_leaves
 
     def get_number_of_assigned_strains(self, asgs):
@@ -112,23 +112,22 @@ class Stats:
             self.nb_asgs+=l
 
             for asg in asgs:
-                nname=assignment["rname"]
-                update_cumuls(self, h1=asg["h1"], c1=asg["c1"], ln=asg["ln"], l=l)
-                for isolate in self.descending_isolates[nname]:
-                    update_strain_stats(self, isolates, h1=asg["h1"], c1=asg["c1"], ln=asg["ln"], l=l)
+                nname=asg["rname"]
+                self.update_cumuls(h1=asg["h1"], c1=asg["c1"], ln=asg["ln"], l=l)
+                for isolates in self.descending_isolates[nname]:
+                    self.update_strain_stats(isolates, h1=asg["h1"], c1=asg["c1"], ln=asg["ln"], l=l)
 
         else:
             assert len(asgs)==1, "A single read shouldn't be reported as unassigned mutliple times (error: {})".format(asgs)
             asg=asgs[0]
             self.nb_unassigned_reads+=1
-            self.update_strain_stats(self, [FAKE_ISOLATE_UNASSIGNED], h1=asg["h1"], c1=asg["c1"], ln=asg["ln"], l=l)
+            self.update_strain_stats([FAKE_ISOLATE_UNASSIGNED], h1=asg["h1"], c1=asg["c1"], ln=asg["ln"], l=l)
 
-    def update_cumuls(self, isolates, h1, c1, ln, l):
+    def update_cumuls(self, h1, c1, ln, l):
         # h1 and c1 can be different for different assignments
-        n_iso=len(isolates)
-        self.cumul_h1_pow1+=1.0* h1 * (n_iso / l)
-        self.cumul_c1_pow1+=1.0* c1 * (n_iso / l)
-        self.cumul_ln_pow1+=1.0* ln * (n_iso / l)
+        self.cumul_h1_pow1+=1.0* h1 / l
+        self.cumul_c1_pow1+=1.0* c1 / l
+        self.cumul_ln_pow1+=1.0* ln / l
 
     def update_strain_stats(self, isolates, h1, c1, ln, l):
         for isolate in isolates:
@@ -150,9 +149,9 @@ class Stats:
             table.append(
                 [
                     n,
-                    self.stats_count[n],
-                    1.0*self.stats_h1_pow0[n]/self.nb_reads if self.nb_reads!=0 else 0,
-                    self.stats_ln[n],
+                    self.stats_h1_pow0[n],
+                    1.0*self.stats_h1_pow0[n]/self.nb_assigned_reads if self.nb_assigned_reads!=0 else 0,
+                    self.stats_ln_pow1[n],
                     self.stats_ln_pow1[n]/self.cumul_ln_pow1 if self.cumul_ln_pow1!=0 else 0,
                     self.stats_h1_pow1[n],
                     self.stats_h1_pow1[n]/self.cumul_h1_pow1 if self.cumul_h1_pow1!=0 else 0,
@@ -263,8 +262,8 @@ class AssignmentReader:
             asg = {
                 "rname": alignment.reference_name,
                 "qname": alignment.qname,
-                "qlen": self.read_ln,
                 "assigned": True,
+                "ln": self.read_ln,
                 "h1": alignment.get_tag("h1"),
                 "c1": alignment.get_tag("c1"),
             }
@@ -272,8 +271,8 @@ class AssignmentReader:
             asg = {
                 "rname": None,
                 "qname": alignment.qname,
-                "qlen": self.read_ln,
                 "assigned": False,
+                "ln": self.read_ln,
                 "h1": None,
                 "c1": None,
             }
@@ -344,7 +343,7 @@ def main():
                 f=open("{}/{}.tsv".format(args.pref, print_timestamp), mode="w")
 
                 time=format_time(print_timestamp-first_timestamp)
-                print("Time t={}: {} reads and {} non-propagated ({} propagated) assignments processed.".format(time, stats.nb_reads, stats.nb_nonprop_asgs, stats.nb_asgs), file=sys.stderr)
+                print("Time t={}: {} reads and {} non-propagated ({} propagated) assignments processed.".format(time, stats.nb_assigned_reads, stats.nb_nonprop_asgs, stats.nb_asgs), file=sys.stderr)
 
         stats.update_from_one_read(read_stats)
 
