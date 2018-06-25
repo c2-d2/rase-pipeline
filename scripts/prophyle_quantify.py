@@ -13,6 +13,26 @@ import ete3
 Assignment: Dictionary with entries name, rlen, h1, c1.
 """
 
+
+
+def timestamp_from_qname(qname):
+    return int(qname.partition("_")[0])
+
+
+def get_first_timestamp(bam_fn):
+    f=pysam.AlignmentFile(bam_fn, "rb")
+    read = next(f.fetch(until_eof=True))
+    f.close()
+    return timestamp_from_qname(read.qname)
+
+
+def format_time(seconds):
+    minutes=seconds//60
+    hours=minutes//60
+    minutes-=60*hours
+    return "{}h{}m".format(hours, minutes)
+
+
 class Stats:
     """Statistics for an experiment.
 
@@ -146,8 +166,11 @@ class Stats:
             print(*x, sep="\t", file=file)
 
 
-class BamReader:
-    """BAM Reader.
+class AssignmentReader:
+    """Iterator over individual ProPhyle assignments in a BAM file.
+
+    Assumes that it is possible to infer read lengths (either
+    from the ln tag, base sequence or cigars).
 
     Params:
         bam_fn (str): BAM file name.
@@ -159,65 +182,97 @@ class BamReader:
 
     def __init__(self, bam_fn):
         self.samfile = pysam.AlignmentFile(bam_fn, "rb")
-        self.asgs=collections.defaultdict(lambda:[])
+        self.alignments_iter = self.samfile.fetch(until_eof=True)
 
+        self.qname=None
+        self.last_qname=None
+        self.read_ln=None
 
-    def process_read(self):
-        """Generator function returning assignments of a single reads.
+    def __iter__(self):
+        return self
 
-        Returns:
-            assignments (list of dicts): Assignments (all levels, non-propagated).
-        """
+    def __next__(self):
+        # 1) acquire a new alignment from SAM
+        try:
+            alignment=next(self.alignments_iter)
+        except StopIteration:
+            raise StopIteration
 
-        self.name=None
-        last_name=None
-        read_ln=0
-        asgs=[]
+        # 2) re-compute basic read-related variables if necessary
+        self.qname=alignment.qname
+        if self.qname!=last_qname:
+            self.read_ln=alignment.get_tag("ln")
+            # todo: check what happens if the ln tag is not present and adjust the following conditions
+            if 1==2: # todo: failing ln
+                if alignment.seq!="*":
+                    self.read_ln=len(alignment.seq)
+                else
+                    #self.read_ln=read.infer_read_length()
+                    self.read_ln=read.infer_read_length()
+        self.last_qname=self.qname
 
-        for read in self.samfile.fetch(until_eof=True):
-            if read.is_unmapped:
-                continue
-            self.name=read.qname
-
-            if self.name!=last_name:
-                read_ln=read.infer_read_length()
-
+        # 3) infer assignment-related variables
+        if not alignment.is_unmapped:
             asg = {
-                "name": read.reference_name,
-                "rlen": read_ln,
-                "h1": read.get_tag("h1"),
-                "c1": read.get_tag("c1"),
+                "qname": alignment.qname,
+                "rname": alignment.reference_name,
+                "rlen": self.read_ln,
+                "classified": True:
+                "h1": alignment.get_tag("h1"),
+                "c1": alignment.get_tag("c1"),
+            }
+        else:
+            asg = {
+                "qname": alignment.qname,
+                "rname": None,
+                "rlen": self.read_ln,
+                "classified": False:
+                "h1": None,
+                "c1": None,
             }
 
-            if last_name is None or self.name==last_name:
-                asgs.append(asg)
-            else:
-                #print(asgs)
-                yield asgs
-                asgs=[asg]
-            last_name=self.name
-        return asgs
-
-    def __del__(self):
-        self.samfile.close()
+        return asg
 
 
-def timestamp_from_qname(qname):
-    return int(qname.partition("_")[0])
+class AssignmentBlockReader:
+    """Iterator over blocks of ProPhyle assignments in a BAM file.
 
+    Assumes a non-empty BAM file.
 
-def get_first_timestamp(bam_fn):
-    return 0
-    bamreader=BamReader(bam_fn)
-    for read_stats in bamreader.process_read():
-        return timestamp_from_qname(bamreader.name)
+    Params:
+        bam_fn (str): BAM file name.
 
+    Attributes:
+    """
 
-def format_time(seconds):
-    minutes=seconds//60
-    hours=minutes//60
-    minutes-=60*hours
-    return "{}h{}m".format(hours, minutes)
+    def __init__(self, bam_fn):
+        self.assignment_reader=AssignmentReader(bam_fn)
+        self._buffer=[]
+        self.finished=False
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        """Get next block of assignments of the same read.
+        """
+
+        if finished:
+            raise StopIteration
+
+        while len(self._buffer)<2 or self._buffer[-1]["qname"]==self._buffer[-2]["qname"]:
+            try:
+                asg=next(self.assignment_reader)
+                self._buffer.append(asg)
+            except StopIteration:
+                finished=True
+                buffer=self._buffer
+                self._buffer=[]
+                return buffer
+
+        buffer=self._buffer[:-1]
+        self._buffer=self._buffer[-1:]
+        return buffer
 
 
 def main():
@@ -256,7 +311,6 @@ def main():
 
 
     args = parser.parse_args()
-    bamreader=BamReader(args.bam)
     stats=Stats(args.tree)
 
     # t=0 point hardcoded as the time of the first read minus 60 seconds
@@ -267,6 +321,7 @@ def main():
     f=open("{}/{}.tsv".format(args.pref, print_timestamp), mode="w")
 
     # 2) iterate through individual reads, and update and print statistics
+    bamreader=BamReader(args.bam)
     for read_stats in bamreader.process_read():
         read_timestamp=timestamp_from_qname(bamreader.name)
 
