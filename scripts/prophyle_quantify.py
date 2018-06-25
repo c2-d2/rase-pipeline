@@ -122,9 +122,9 @@ class Stats:
             self.update_strain_stats([FAKE_ISOLATE_UNASSIGNED], h1=asg["h1"], c1=asg["c1"], ln=asg["ln"], l=l)
 
     def update_cumuls(self, h1, c1, ln, weight):
-        self.cumul_h1_pow1+= h1 / weight
-        self.cumul_c1_pow1+= c1 / weight
-        self.cumul_ln_pow1+= ln / weight
+        self.cumul_h1_pow1+= h1 * weight
+        self.cumul_c1_pow1+= c1 * weight
+        self.cumul_ln_pow1+= ln * weight
 
     def update_strain_stats(self, isolates, h1, c1, ln, l):
         for isolate in isolates:
