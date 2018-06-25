@@ -249,7 +249,7 @@ class AssignmentBlockReader:
     def __init__(self, bam_fn):
         self.assignment_reader=AssignmentReader(bam_fn)
         self._buffer=[]
-        self.finished=False
+        self._finished=False
 
     def __iter__(self):
         return self
@@ -258,7 +258,7 @@ class AssignmentBlockReader:
         """Get next block of assignments of the same read.
         """
 
-        if self.finished:
+        if self._finished:
             raise StopIteration
 
         while len(self._buffer)<2 or self._buffer[-1]["qname"]==self._buffer[-2]["qname"]:
@@ -266,7 +266,7 @@ class AssignmentBlockReader:
                 asg=next(self.assignment_reader)
                 self._buffer.append(asg)
             except StopIteration:
-                finished=True
+                self._finished=True
                 buffer=self._buffer
                 self._buffer=[]
                 return buffer
