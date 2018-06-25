@@ -129,13 +129,16 @@ class Tsv:
             tsv_reader = csv.DictReader(f, delimiter='\t')
             rows=[]
             for r in tsv_reader:
+                if r["taxid"]=="_unassigned_":
+                    continue
+
                 rd={}
                 ###
                 rd['taxid']=r['taxid']
                 # count
                 rd['count']=float(r['count'])
-                # len
-                rd['len']=float(r['len'])
+                # ln
+                rd['ln']=float(r['ln'])
                 # h1
                 rd['h1']=float(r['h1'])
                 # c1
@@ -167,7 +170,7 @@ class Tsv:
 
         summary['datetime']=self.datetime
         summary['read count']=int(self.cumul_count())
-        summary['read len']=int(self.cumul_len())
+        summary['read len']=int(self.cumul_ln())
         summary['used bases']=int(self.cumul_c1())
 
 
@@ -279,8 +282,8 @@ class Tsv:
         return sum([self.measures[taxid]['count'] for taxid in self.measures])
 
 
-    def cumul_len(self):
-        return sum([self.measures[taxid]['len'] for taxid in self.measures])
+    def cumul_ln(self):
+        return sum([self.measures[taxid]['ln'] for taxid in self.measures])
 
 
     def cumul_c1(self):
