@@ -20,6 +20,7 @@ def timestamp_from_qname(qname):
 
 
 def get_first_timestamp(bam_fn):
+    return 0
     f=pysam.AlignmentFile(bam_fn, "rb")
     read = next(f.fetch(until_eof=True))
     f.close()
@@ -95,9 +96,9 @@ class Stats:
 
         asgs_leaves=[]
         for asg in asgs:
-            for leafname in self.nodename_to_leave_nodenames[asg['name']]:
+            for leafname in self.nodename_to_leave_nodenames[asg['rname']]:
                     asg2=asg.copy()
-                    asg2["name"]=leafname
+                    asg2["rname"]=leafname
                     asgs_leaves.append(asg2)
 
         return asgs_leaves
@@ -123,7 +124,7 @@ class Stats:
         self.cumul_c1+=1.0*sum([x["c1"] for x in asgs_leaves]) / l
 
         for asg in asgs_leaves:
-            n=asg["name"]
+            n=asg["rname"]
             self.stats_rlen[n]+=1.0 * asg["rlen"] / l
             self.stats_rlensq[n]+=1.0 * (asg["rlen"]**2) / l
             self.stats_count[n]+=1.0 / l
@@ -200,13 +201,13 @@ class AssignmentReader:
 
         # 2) re-compute basic read-related variables if necessary
         self.qname=alignment.qname
-        if self.qname!=last_qname:
-            self.read_ln=alignment.get_tag("ln")
-            # todo: check what happens if the ln tag is not present and adjust the following conditions
-            if 1==2: # todo: failing ln
+        if self.qname!=self.last_qname:
+            try:
+                self.read_ln=alignment.get_tag("ln")
+            except KeyError: # a ln tag is not present
                 if alignment.seq!="*":
                     self.read_ln=len(alignment.seq)
-                else
+                else:
                     #self.read_ln=read.infer_read_length()
                     self.read_ln=read.infer_read_length()
         self.last_qname=self.qname
@@ -217,7 +218,7 @@ class AssignmentReader:
                 "qname": alignment.qname,
                 "rname": alignment.reference_name,
                 "rlen": self.read_ln,
-                "classified": True:
+                "classified": True,
                 "h1": alignment.get_tag("h1"),
                 "c1": alignment.get_tag("c1"),
             }
@@ -226,7 +227,7 @@ class AssignmentReader:
                 "qname": alignment.qname,
                 "rname": None,
                 "rlen": self.read_ln,
-                "classified": False:
+                "classified": False,
                 "h1": None,
                 "c1": None,
             }
@@ -257,7 +258,7 @@ class AssignmentBlockReader:
         """Get next block of assignments of the same read.
         """
 
-        if finished:
+        if self.finished:
             raise StopIteration
 
         while len(self._buffer)<2 or self._buffer[-1]["qname"]==self._buffer[-2]["qname"]:
@@ -321,9 +322,10 @@ def main():
     f=open("{}/{}.tsv".format(args.pref, print_timestamp), mode="w")
 
     # 2) iterate through individual reads, and update and print statistics
-    bamreader=BamReader(args.bam)
-    for read_stats in bamreader.process_read():
-        read_timestamp=timestamp_from_qname(bamreader.name)
+    assignment_bam_reader=AssignmentBlockReader(args.bam)
+    for read_stats in assignment_bam_reader:
+        assert len(read_stats)>0
+        read_timestamp=timestamp_from_qname(read_stats[0]["qname"])
 
         if args.pref is not None:
 
