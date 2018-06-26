@@ -15,16 +15,9 @@ Assignment: Dictionary with entries name, qlen, h1, c1.
 
 FAKE_ISOLATE_UNASSIGNED="_unassigned_"
 
+
 def timestamp_from_qname(qname):
     return int(qname.partition("_")[0])
-
-
-def get_first_timestamp(bam_fn):
-    return 0
-    f=pysam.AlignmentFile(bam_fn, "rb")
-    read = next(f.fetch(until_eof=True))
-    f.close()
-    return timestamp_from_qname(read.qname)
 
 
 def format_time(seconds):
@@ -171,12 +164,15 @@ class AssignmentBlockReader:
         bam_fn (str): BAM file name.
 
     Attributes:
+        t1 (int): Timestamp of first read
     """
 
     def __init__(self, bam_fn):
         self.assignment_reader=AssignmentReader(bam_fn)
         self._buffer=[]
         self._finished=False
+        self._load_assignment()
+        self._extract_t1()
 
     def __iter__(self):
         return self
@@ -190,8 +186,7 @@ class AssignmentBlockReader:
 
         while len(self._buffer)<2 or self._buffer[-1]["qname"]==self._buffer[-2]["qname"]:
             try:
-                asg=next(self.assignment_reader)
-                self._buffer.append(asg)
+                self._load_assignment()
             except StopIteration:
                 self._finished=True
                 buffer=self._buffer
@@ -201,6 +196,13 @@ class AssignmentBlockReader:
         buffer=self._buffer[:-1]
         self._buffer=self._buffer[-1:]
         return buffer
+
+    def _load_assignment(self):
+        asg=next(self.assignment_reader)
+        self._buffer.append(asg)
+
+    def _extract_t1(self):
+        self.t1=timestamp_from_qname(self._buffer[0]["qname"])
 
 
 class AssignmentReader:
@@ -299,7 +301,7 @@ def main():
             type=str,
             dest='pref',
             metavar='STR',
-            default=None,
+            required=True,
             help="Output dir for samplings"
         )
 
@@ -311,35 +313,42 @@ def main():
             default=300,
         )
 
+    parser.add_argument('-f',
+            type=int,
+            dest='first_read_delay',
+            metavar='INT',
+            help='delay of the first read [60]',
+            default=60,
+        )
+
 
     args = parser.parse_args()
+
     stats=Stats(args.tree)
+    assignment_block_reader=AssignmentBlockReader(args.bam)
 
-    # t=0 point hardcoded as the time of the first read minus 60 seconds
-    first_timestamp=get_first_timestamp(args.bam)-60
-    print_timestamp=first_timestamp
-
-    # 1) print empty statistics
-    f=open("{}/{}.tsv".format(args.pref, print_timestamp), mode="w")
+    # 1) set the initial window:
+    #     [t0, t0+delta), where t0=time_of_first_read-first_read_delay
+    t0=assignment_block_reader.t1-args.first_read_delay
+    current_window=[t0, t0+args.delta] # [x, y)
+    f=open("{}/{}.tsv".format(args.pref, current_window[1]), mode="w")
 
     # 2) iterate through individual reads, and update and print statistics
-    assignment_bam_reader=AssignmentBlockReader(args.bam)
-    for read_stats in assignment_bam_reader:
+    for read_stats in assignment_block_reader:
         assert len(read_stats)>0
         read_timestamp=timestamp_from_qname(read_stats[0]["qname"])
 
-        if args.pref is not None:
+        # do we have to shift the window?
+        if read_timestamp >= current_window[1]:
+            stats.print(file=f)
+            f.close()
+            while read_timestamp >= current_window[1]:
+                current_window[0]+=args.delta
+                current_window[1]+=args.delta
+            f=open("{}/{}.tsv".format(args.pref, current_window[1]), mode="w")
 
-            if print_timestamp + args.delta <= read_timestamp:
-                # print current statistics, shift to the new time and open a new file
-                stats.print(file=f)
-                f.close()
-                while print_timestamp + args.delta < read_timestamp:
-                    print_timestamp+=args.delta
-                f=open("{}/{}.tsv".format(args.pref, print_timestamp), mode="w")
-
-                time=format_time(print_timestamp-first_timestamp)
-                print("Time t={}: {} reads and {} non-propagated ({} propagated) assignments processed.".format(time, stats.nb_assigned_reads, stats.nb_nonprop_asgs, stats.nb_asgs), file=sys.stderr)
+            last_time=format_time(current_window[0]-t0)
+            print("Time t={}: {} reads and {} non-propagated ({} propagated) assignments processed.".format(last_time, stats.nb_assigned_reads, stats.nb_nonprop_asgs, stats.nb_asgs), file=sys.stderr)
 
         stats.update_from_one_read(read_stats)
 
