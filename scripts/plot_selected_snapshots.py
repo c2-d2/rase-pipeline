@@ -44,7 +44,7 @@ def plot_snapshots(res_table, directory, indexes, outprefix, time0):
     for fn, s, t in plots:
         cmd=[plotting_script, res_table, fn, "{}{}.pdf".format(outprefix, t)]
         print(" ".join(cmd))
-        subprocess.run(cmd)
+        subprocess.run(cmd, check=True)
 
 
 def get_plot_info(directory, indexes, time0):
