@@ -77,8 +77,8 @@ DfToAnts <- function(dataframe) {
 ###############
 
 if (kRStudio) {
-  src.file <- "input/01_sparc_01.h1.k18.nofilt.1496784077.tsv"
-  res.file <- "input/res_cat.tsv"
+  src.file <- "../tests/test.timestamp.tsv"
+  res.file <- "../tests/res_cat.tsv"
   timestamp <- 1505967676
   sample.desc <- "Sample desc."
 } else {
