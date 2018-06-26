@@ -38,16 +38,16 @@ def secs_to_text(cs):
     return "_".join(parts[::-1])
 
 
-def plot_snapshots(res_table, directory, indexes, outprefix, time0):
+def plot_snapshots(res_table, directory, indexes, outprefix):
     plotting_script=os.path.join(os.path.dirname(os.path.realpath(__file__)), "plot_snapshot.R")
-    plots=get_plot_info(directory, indexes, time0)
+    plots=get_plot_info(directory, indexes)
     for fn, s, t in plots:
         cmd=[plotting_script, res_table, fn, "{}{}.pdf".format(outprefix, t)]
         print(" ".join(cmd))
         subprocess.run(cmd, check=True)
 
 
-def get_plot_info(directory, indexes, time0):
+def get_plot_info(directory, indexes):
     fns=glob.glob(os.path.join(directory, "*.tsv"))
     tsvs_abs={
             fn: int(extract_ts(fn))
@@ -55,7 +55,7 @@ def get_plot_info(directory, indexes, time0):
             }
     min_ts=min(tsvs_abs.values())
     tsvs_rel=[
-            [k, v-min_ts+time0]
+            [k, v-min_ts]
             for (k,v) in tsvs_abs.items()
             ]
     tsvs_rel.sort(key=lambda x: x[1])
@@ -70,14 +70,6 @@ def get_plot_info(directory, indexes, time0):
 
 def main():
     parser = argparse.ArgumentParser(description="Plot selected snapshots and use human readable names (e.g., 5m, 1h, etc.)")
-
-    parser.add_argument('-f',
-            type=int,
-            default=60,
-            metavar='int',
-            dest='time0',
-            help='First timestamp [60]',
-        )
 
     parser.add_argument('res_table',
             type=str,
@@ -106,7 +98,7 @@ def main():
 
     args = parser.parse_args()
 
-    plot_snapshots(args.res_table, args.dir, args.indexes, args.outpref, args.time0)
+    plot_snapshots(args.res_table, args.dir, args.indexes, args.outpref)
 
 
 if __name__ == "__main__":
