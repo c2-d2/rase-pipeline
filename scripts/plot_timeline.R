@@ -10,7 +10,7 @@ library(optparse)
 kIsRStudio <- Sys.getenv("RSTUDIO") == "1"
 
 if (kIsRStudio) {
-  src.file <- "../tests/predict3.tsv"
+  src.file <- "../tests/sp09_norwich_7841__spneumoniae_sparc.k32.predict.tsv"
 } else {
   parser <-
     OptionParser(usage = "%prog [options] timeline.tsv plot.pdf")
