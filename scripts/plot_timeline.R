@@ -42,9 +42,6 @@ kRLUnitRatio <- 60
 kFirstMinutes <- 15
 kLastHours <- 2
 
-# time of the first snapshot
-kFirstSnapshotTime <- as.difftime(c(1), units = "mins")
-
 # remove endpoints more than ... far away
 kEndpointFilter <- 3
 
@@ -74,7 +71,7 @@ LoadTimelineData <- function(src.file) {
   df <- read.delim(src.file, header = TRUE)
   df$datetime <-
     as.POSIXct(strptime(df$datetime, "%Y-%m-%d %H:%M:%S"))
-  first.datetime <- df$datetime[1] - kFirstSnapshotTime
+  first.datetime <- df$datetime[1]
 
   df$time.mins <-
     difftime(df$datetime, first.datetime, units = "mins")
