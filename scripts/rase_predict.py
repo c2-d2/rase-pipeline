@@ -186,10 +186,12 @@ class Tsv:
 
         if pg1_measmax==0:
             summary['PG1']="NA"
-            summary['PG1']="NA"
+            summary['taxid']="NA"
+            summary['serotype']="NA"
+            summary['ST']="NA"
         if pg2_measmax==0:
             summary['PG2']="NA"
-        if pg1_measmax+pg2_measmax>0:
+        if pg1_measmax>0:
             summary['PG_score']=2*(round(pg1_measmax/(pg1_measmax+pg2_measmax)*1000)/1000)-1
         else:
             summary['PG_score']=0
@@ -200,8 +202,13 @@ class Tsv:
 
             # ant category
             cat_col=ant.upper()+"_cat"
-            predict_cat=self.rtbl.rcat[predicted_taxid][ant]
+            if pg1_measmax>0:
+                predict_cat=self.rtbl.rcat[predicted_taxid][ant]
+            else:
+                predict_cat="NA"
             summary[cat_col]=predict_cat
+
+            # todo: add a comment that we take the category of the best isolate; not the same as in the plots
 
             # susc score
             score_col=ant.upper()+"_susc_score"
@@ -218,6 +225,8 @@ class Tsv:
                     susc_score=0.0
                 elif predict_cat=='S':
                     susc_score=1.0
+                elif predict_cat=='NA' and pg1_measmax==0:
+                    susc_score=0.0
                 elif predict_cat=='NA':
                     susc_score='NA'
 
