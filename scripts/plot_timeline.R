@@ -235,7 +235,7 @@ PlotReads <- function(i) {
 
   if (i == 1) {
     legend("topleft",
-           c("PG1 stab.", "PG2 stab.", "taxid stab."),
+           c("First PG stabilized", "Second PG  stabilized", "Isolate stabilized"),
            bg="white",
            pch = c(4, 3, 0))
   }
