@@ -308,9 +308,9 @@ text(
 )
 
 
-bps.total <- sum(df[c("ln")])
-bps.voting <- sum(df[c("h1")])
-reads <- sum(df[c("count")])
+bps.total <- sum(dfsnap_with_unassigned[c("ln")])
+bps.voting <- sum(dfsnap_with_unassigned[c("h1")])
+reads <- sum(dfsnap_with_unassigned[c("count")])
 subtitle <- paste(
   "Reads: ",
   format(as.integer(reads), big.mark = ","),
