@@ -26,10 +26,15 @@ help: ## Print help message
 clean: ## Clean
 	rm -f plots/*.pdf benchmarks/*.plot.log
 	rm -f prediction/.*.quantify.complete benchmarks/*.quantify.log
-	rm -f prediction/*.predict.{tsv,complete} prediction/*/*.tsv benchmarks/*.predict.log
+	rm -f prediction/*.predict.tsv
+	rm -f prediction/*.predict.complete
+	rm -f prediction/*/*.tsv
+	rm -f benchmarks/*.predict.log
 
 cleanall: clean
 	rm -f prediction/*.{fq,fq.complete} benchmarks/*.readprep.log
-	rm -f prediction/*.{bam,bam} prediction/.*.complete benchmarks/*.classify.log
+	rm -f prediction/*.bam
+	rm -f prediction/.*.complete
+	rm -f benchmarks/*.classify.log
 	rm -fr database/.*.complete $$(ls -d database/*/ 2>/dev/null || true) benchmarks/decompress.log
 
