@@ -112,7 +112,7 @@ class Stats:
             assert len(asgs)==1, "A single read shouldn't be reported as unassigned mutliple times (error: {})".format(asgs)
             asg=asgs[0]
             self.nb_unassigned_reads+=1
-            self.update_strain_stats([FAKE_ISOLATE_UNASSIGNED], h1=asg["h1"], c1=asg["c1"], ln=asg["ln"], l=l)
+            self.update_strain_stats([FAKE_ISOLATE_UNASSIGNED], h1=0, c1=0, ln=asg["ln"], l=1)
 
     def update_cumuls(self, h1, c1, ln, weight):
         self.cumul_h1_pow1+= h1 * weight
@@ -274,7 +274,6 @@ class AssignmentReader:
                 "h1": None,
                 "c1": None,
             }
-            print(asg)
 
         return asg
 
