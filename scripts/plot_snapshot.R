@@ -116,14 +116,14 @@ if (kRStudio) {
 
 palette(kPalette)
 
-dfsnap <- read.delim(src.file, header = TRUE)
 dfres <- read.delim(res.file, header = T)
+dfsnap_with_unassigned <- read.delim(src.file, header = TRUE)
+dfsnap <- dfsnap_with_unassigned[dfsnap_with_unassigned$taxid!="_unassigned_",]
 
 stopifnot(length(dfsnap[, 1]) == length(dfres[, 1])) # are the lengths the same?
 stopifnot(dfsnap[order(dfsnap$taxid),]['taxid'] == dfres[order(dfres$taxid),]['taxid']) # are the taxids the same?
 
 df <- merge(dfsnap, dfres, by = "taxid")
-
 
 sel <- df[with(df, order(-h1_norm)), ][1:kSelected,]
 
