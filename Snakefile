@@ -69,7 +69,7 @@ rule preprocess_reads:
         "benchmarks/{pref}.readprep.log"
     shell:
         """
-            ./scripts/minion_rename_reads.py {input.fq} | paste -d '\t' - - - - | sort | perl -pe 's/\t/\n/g' > "{params.fq}"
+            ./scripts/minion_rename_reads.py {input.fq} | paste -d '\t' - - - - | sort | uniq | perl -pe 's/\t/\n/g' > "{params.fq}"
             touch "{output.t}"
         """
 
