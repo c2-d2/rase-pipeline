@@ -129,8 +129,8 @@ class Tsv:
             tsv_reader = csv.DictReader(f, delimiter='\t')
             rows=[]
             for r in tsv_reader:
-                if r["taxid"]=="_unassigned_":
-                    continue
+                #if r["taxid"]=="_unassigned_":
+                #    continue
 
                 rd={}
                 ###
@@ -267,6 +267,8 @@ class Tsv:
         d=collections.defaultdict(lambda: [None, -1])
 
         for taxid in self.measures:
+            if taxid=="_unassigned_":
+                continue
             pg = self.rtbl.pg[taxid]
             val = self.measures[taxid][measure]
 
