@@ -10,8 +10,22 @@ import ete3
 
 """Quantify assignments on the level of leaves.
 
-Assignment: Dictionary with entries name, rlen, h1, c1.
+Assignment: Dictionary with entries name, qlen, h1, c1.
 """
+
+FAKE_ISOLATE_UNASSIGNED="_unassigned_"
+
+
+def timestamp_from_qname(qname):
+    return int(qname.partition("_")[0])
+
+
+def format_time(seconds):
+    minutes=seconds//60
+    hours=minutes//60
+    minutes-=60*hours
+    return "{}h{}m".format(hours, minutes)
+
 
 class Stats:
     """Statistics for an experiment.
@@ -20,98 +34,97 @@ class Stats:
         tree_fn (str): Filename of the Newick tree.
 
     Attributes:
-        self.nb_reads (int): Number of processed reads.
-        self.nb_nonprop_asgs (int): Number of processed alignments (before propagation).
-        self.nb_asgs (int): Number of processed alignments (after propagation).
+        nb_reads (int): Number of processed reads.
+        nb_nonprop_asgs (int): Number of processed alignments (before propagation).
+        nb_asgs (int): Number of processed alignments (after propagation).
 
-        self.cumul_rlen (float): Cumulative weighted read length.
-        self.cumul_h1 (float): Cumulative weighted hit count.
-        self.cumul_c1 (float): Cumulative weighted coverage.
+        cumul_qlen (float): Cumulative weighted read length.
+        cumul_h1 (float): Cumulative weighted hit count.
+        cumul_c1 (float): Cumulative weighted coverage.
 
-        self.stats_count (dict): nodename -> number of processed reads
-        self.stats_rlen (dict): nodename -> weighted rlen
-        self.stats_rlensq (dict): nodename -> weighted squared rlen
-        self.stats_h1 (dict): nodename -> squared h1
-        self.stats_h1sq (dict): nodename -> weighted squared h1
-        self.stats_c1 (dict): nodename -> squared c1
-        self.stats_c1sq (dict): nodename -> weighted squared c1
+        stats_count (dict): isolate -> number of processed reads
+        stats_qlen (dict): isolate -> weighted qlen
+        stats_h1 (dict): isolate -> squared h1
+        stats_c1 (dict): isolate -> squared c1
     """
 
     def __init__(self, tree_fn):
         self.tree=ete3.Tree(tree_fn, format=1)
+        self.isolates=sorted([isolate.name for isolate in self.tree])
+        self.descending_isolates=self.precompute_descendants(self.tree)
 
-        self.nb_reads=0
+        # stats for assigned reads
+        self.nb_assigned_reads=0
         self.nb_nonprop_asgs=0
         self.nb_asgs=0
 
-        self.cumul_rlen=0.0
-        self.cumul_h1=0.0
-        self.cumul_c1=0.0
+        # stats for unassigned reads
+        self.nb_unassigned_reads=0
+       
+        # cumulative statistics for assigned reads
+        self.cumul_h1_pow1=0.0
+        self.cumul_c1_pow1=0.0
+        self.cumul_ln_pow1=0.0
 
-        self.stats_count=collections.defaultdict(lambda:0.0)
-        self.stats_rlen=collections.defaultdict(lambda:0.0)
-        self.stats_rlensq=collections.defaultdict(lambda:0.0)
-        self.stats_h1=collections.defaultdict(lambda:0.0)
-        self.stats_h1sq=collections.defaultdict(lambda:0.0)
-        self.stats_c1=collections.defaultdict(lambda:0.0)
-        self.stats_c1sq=collections.defaultdict(lambda:0.0)
+        # statistics for individual isolates, "_unassigned_" for unassigned
+        self.stats_h1_pow0=collections.defaultdict(lambda:0.0)
+        self.stats_h1_pow1=collections.defaultdict(lambda:0.0)
+        self.stats_c1_pow1=collections.defaultdict(lambda:0.0)
+        self.stats_ln_pow1=collections.defaultdict(lambda:0.0)
 
-        self.nodename_to_leave_nodenames=collections.defaultdict(lambda:[])
-        for root in list(self.tree.traverse())+[self.tree]:
-            self.nodename_to_leave_nodenames[root.name]=set([x.name for x in root])
+    def precompute_descendants(self, tree):
+        descending_leaves={}
+        for root in list(tree.traverse())+[tree]:
+            descending_leaves[root.name]=set([isolate.name for isolate in root])
+        return descending_leaves
 
-        #print(self.nodename_to_leave_nodenames, file=sys.stderr)
+    def get_number_of_assigned_strains(self, asgs):
+        l=0
+        for asg in asgs: 
+            l+=len(self.descending_isolates[asg["rname"]])
+        return l
 
-
-    def propagate_asgs_leaves(self, asgs):
-        """Propagate assignments of a single from nodes to leaves.
-
-        Params:
-            asgs (list of dicts): Assignments.
-
-        Return:
-            asgs_leaves (list of dicts): Assignments propagated to the leaves.
-        """
-
-        asgs_leaves=[]
-        for asg in asgs:
-            for leafname in self.nodename_to_leave_nodenames[asg['name']]:
-                    asg2=asg.copy()
-                    asg2["name"]=leafname
-                    asgs_leaves.append(asg2)
-
-        return asgs_leaves
-
-
-    def update_oneread(self, asgs):
+    def update_from_one_read(self, asgs):
         """Update statistics from assignments of a single read.
 
         Params:
             asgs (dict): Assignments.
         """
 
-        self.nb_nonprop_asgs+=len(asgs)
-        asgs_leaves=self.propagate_asgs_leaves(asgs)
-        l=len(asgs_leaves)
+        assert len(asgs)>0, "No assignments provided"
 
-        self.nb_reads+=1
-        self.nb_asgs+=l
+        is_assigned=asgs[0]["assigned"]
 
-        # in theory, h1 and c1 can be different for different assignments
-        self.cumul_rlen+=1.0*sum([x["rlen"] for x in asgs_leaves]) / l
-        self.cumul_h1+=1.0*sum([x["h1"] for x in asgs_leaves]) / l
-        self.cumul_c1+=1.0*sum([x["c1"] for x in asgs_leaves]) / l
+        if is_assigned:
+            l=self.get_number_of_assigned_strains(asgs)
+            
+            self.nb_assigned_reads+=1
+            self.nb_nonprop_asgs+=len(asgs)
+            self.nb_asgs+=l
 
-        for asg in asgs_leaves:
-            n=asg["name"]
-            self.stats_rlen[n]+=1.0 * asg["rlen"] / l
-            self.stats_rlensq[n]+=1.0 * (asg["rlen"]**2) / l
-            self.stats_count[n]+=1.0 / l
-            self.stats_h1[n]+=1.0*asg["h1"] / l
-            self.stats_h1sq[n]+=1.0*(asg["h1"]**2) / l
-            self.stats_c1[n]+=1.0*asg["c1"] / l
-            self.stats_c1sq[n]+=1.0*(asg["c1"]**2) / l
+            for asg in asgs:
+                nname=asg["rname"]
+                descending_isolates=self.descending_isolates[nname]
+                self.update_cumuls(h1=asg["h1"], c1=asg["c1"], ln=asg["ln"], weight=len(descending_isolates)/l)
+                self.update_strain_stats(descending_isolates, h1=asg["h1"], c1=asg["c1"], ln=asg["ln"], l=l)
 
+        else:
+            assert len(asgs)==1, "A single read shouldn't be reported as unassigned mutliple times (error: {})".format(asgs)
+            asg=asgs[0]
+            self.nb_unassigned_reads+=1
+            self.update_strain_stats([FAKE_ISOLATE_UNASSIGNED], h1=asg["h1"], c1=asg["c1"], ln=asg["ln"], l=l)
+
+    def update_cumuls(self, h1, c1, ln, weight):
+        self.cumul_h1_pow1+= h1 * weight
+        self.cumul_c1_pow1+= c1 * weight
+        self.cumul_ln_pow1+= ln * weight
+
+    def update_strain_stats(self, isolates, h1, c1, ln, l):
+        for isolate in isolates:
+            self.stats_h1_pow0[isolate]+=1.0 / l
+            self.stats_h1_pow1[isolate]+=1.0 * (h1 / l)
+            self.stats_c1_pow1[isolate]+=1.0 * (c1 / l)
+            self.stats_ln_pow1[isolate]+=1.0 * (ln / l)
 
     def print(self, file):
         """Print statistics.
@@ -119,91 +132,151 @@ class Stats:
         Args:
             file (file): Output file.
         """
-        print("taxid", "count", "count_norm", "len", "len_norm", "lensq", "h1", "h1_norm", "h1sq", "c1", "c1_norm", "c1sq", sep="\t", file=file)
+        print("taxid", "count", "count_norm", "ln", "ln_norm", "h1", "h1_norm", "c1", "c1_norm", sep="\t", file=file)
         table=[]
-        for node in self.tree:
-            n=node.name
+        for isolate in self.isolates + [FAKE_ISOLATE_UNASSIGNED]:
             table.append(
                 [
-                    n,
-                    self.stats_count[n],
-                    1.0*self.stats_count[n]/self.nb_reads,
-                    self.stats_rlen[n],
-                    self.stats_rlen[n]/self.cumul_rlen,
-                    self.stats_rlensq[n],
-                    self.stats_h1[n],
-                    self.stats_h1[n]/self.cumul_h1,
-                    self.stats_h1sq[n],
-                    self.stats_c1[n],
-                    self.stats_c1[n]/self.cumul_c1,
-                    self.stats_c1sq[n],
+                    isolate,
+                    self.stats_h1_pow0[isolate],
+                    1.0*self.stats_h1_pow0[isolate]/self.nb_assigned_reads if self.nb_assigned_reads!=0 else 0,
+                    self.stats_ln_pow1[isolate],
+                    self.stats_ln_pow1[isolate]/self.cumul_ln_pow1 if self.cumul_ln_pow1!=0 else 0,
+                    self.stats_h1_pow1[isolate],
+                    self.stats_h1_pow1[isolate]/self.cumul_h1_pow1 if self.cumul_h1_pow1!=0 else 0,
+                    self.stats_c1_pow1[isolate],
+                    self.stats_c1_pow1[isolate]/self.cumul_c1_pow1 if self.cumul_c1_pow1!=0 else 0,
                 ]
             )
 
-        table.sort(key=lambda x: x[7], reverse=True)
+        table.sort(key=lambda x: x[5], reverse=True)
 
         for x in table:
             print(*x, sep="\t", file=file)
 
 
-class BamReader:
-    """BAM Reader.
+class AssignmentBlockReader:
+    """Iterator over blocks of ProPhyle assignments in a BAM file.
+
+    Assumes a non-empty BAM file.
+
+    Params:
+        bam_fn (str): BAM file name.
+
+    Attributes:
+        t1 (int): Timestamp of first read
+    """
+
+    def __init__(self, bam_fn):
+        self.assignment_reader=AssignmentReader(bam_fn)
+        self._buffer=[]
+        self._finished=False
+        self._load_assignment()
+        self._extract_t1()
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        """Get next block of assignments of the same read.
+        """
+
+        if self._finished:
+            raise StopIteration
+
+        while len(self._buffer)<2 or self._buffer[-1]["qname"]==self._buffer[-2]["qname"]:
+            try:
+                self._load_assignment()
+            except StopIteration:
+                self._finished=True
+                buffer=self._buffer
+                self._buffer=[]
+                return buffer
+
+        buffer=self._buffer[:-1]
+        self._buffer=self._buffer[-1:]
+        return buffer
+
+    def _load_assignment(self):
+        asg=next(self.assignment_reader)
+        self._buffer.append(asg)
+
+    def _extract_t1(self):
+        self.t1=timestamp_from_qname(self._buffer[0]["qname"])
+
+
+class AssignmentReader:
+    """Iterator over individual ProPhyle assignments in a BAM file.
+
+    Assumes that it is possible to infer read lengths (either
+    from the ln tag, base sequence or cigars).
 
     Params:
         bam_fn (str): BAM file name.
 
     Attributes:
         samfile (pysam.AlignmentFile): PySAM file object.
-        asgs (list of dicts): Assignments (unfinished).
     """
 
     def __init__(self, bam_fn):
         self.samfile = pysam.AlignmentFile(bam_fn, "rb")
-        self.asgs=collections.defaultdict(lambda:[])
+        self.alignments_iter = self.samfile.fetch(until_eof=True)
 
+        self.qname=None
+        self.last_qname=None
+        self.read_ln=None
 
-    def process_read(self):
-        """Generator function returning assignments of a single reads.
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        """Get next assignment.
 
         Returns:
-            assignments (list of dicts): Assignments (all levels, non-propagated).
+            assignment (dict): A dict with the following keys: "rname", "qname", "qlen, "assigned", "h1", "c1".
         """
 
-        self.name=None
-        last_name=None
-        read_ln=0
-        asgs=[]
+        # 1) acquire a new alignment from SAM
+        try:
+            alignment=next(self.alignments_iter)
+        except StopIteration:
+            raise StopIteration
 
-        for read in self.samfile.fetch(until_eof=True):
-            if read.is_unmapped:
-                continue
-            self.name=read.qname
+        # 2) re-compute basic read-related variables if necessary
+        self.qname=alignment.qname
+        if self.qname!=self.last_qname:
+            try:
+                self.read_ln=alignment.get_tag("ln")
+            except KeyError: # a ln tag is not present
+                if alignment.seq!="*":
+                    self.read_ln=len(alignment.seq)
+                else:
+                    #self.read_ln=read.infer_read_length()
+                    self.read_ln=read.infer_read_length()
+        self.last_qname=self.qname
 
-            if self.name!=last_name:
-                read_ln=read.infer_read_length()
-
+        # 3) infer assignment-related variables
+        if not alignment.is_unmapped:
             asg = {
-                "name": read.reference_name,
-                "rlen": read_ln,
-                "h1": read.get_tag("h1"),
-                "c1": read.get_tag("c1"),
+                "rname": alignment.reference_name,
+                "qname": alignment.qname,
+                "assigned": True,
+                "ln": self.read_ln,
+                "h1": alignment.get_tag("h1"),
+                "c1": alignment.get_tag("c1"),
             }
+        else:
+            asg = {
+                "rname": None,
+                "qname": alignment.qname,
+                "assigned": False,
+                "ln": self.read_ln,
+                "h1": None,
+                "c1": None,
+            }
+            print(asg)
 
-            if last_name is None or self.name==last_name:
-                asgs.append(asg)
-            else:
-                #print(asgs)
-                yield asgs
-                asgs=[asg]
-            last_name=self.name
-        return asgs
-
-
-def format_time(seconds):
-    minutes=seconds//60
-    hours=minutes//60
-    minutes-=60*hours
-    return "{}h{}m".format(hours, minutes)
+        return asg
 
 
 def main():
@@ -228,7 +301,7 @@ def main():
             type=str,
             dest='pref',
             metavar='STR',
-            default=None,
+            required=True,
             help="Output dir for samplings"
         )
 
@@ -240,37 +313,47 @@ def main():
             default=300,
         )
 
+    parser.add_argument('-f',
+            type=int,
+            dest='first_read_delay',
+            metavar='INT',
+            help='delay of the first read [60]',
+            default=60,
+        )
+
 
     args = parser.parse_args()
-    bamreader=BamReader(args.bam)
+
     stats=Stats(args.tree)
+    assignment_block_reader=AssignmentBlockReader(args.bam)
 
-    printed_timestamp=None
-    first_timestamp=None
-    for read_stats in bamreader.process_read():
-        read_timestamp=int(bamreader.name.partition("_")[0])
+    # 1) set the initial window:
+    #     [t0, t0+delta), where t0=time_of_first_read-first_read_delay
+    t0=assignment_block_reader.t1-args.first_read_delay
+    current_window=[t0, t0+args.delta] # [x, y)
+    f=open("{}/{}.tsv".format(args.pref, current_window[1]), mode="w")
 
-        if args.pref is not None:
+    # 2) iterate through individual reads, and update and print statistics
+    for read_stats in assignment_block_reader:
+        assert len(read_stats)>0
+        read_timestamp=timestamp_from_qname(read_stats[0]["qname"])
 
-            # initial timestamp
-            if printed_timestamp is None:
-                printed_timestamp=read_timestamp
+        # do we have to shift the window?
+        if read_timestamp >= current_window[1]:
+            stats.print(file=f)
+            f.close()
+            while read_timestamp >= current_window[1]:
+                current_window[0]+=args.delta
+                current_window[1]+=args.delta
+            f=open("{}/{}.tsv".format(args.pref, current_window[1]), mode="w")
 
-            if printed_timestamp + args.delta <= read_timestamp:
+            last_time=format_time(current_window[0]-t0)
+            print("Time t={}: {} reads and {} non-propagated ({} propagated) assignments processed.".format(last_time, stats.nb_assigned_reads, stats.nb_nonprop_asgs, stats.nb_asgs), file=sys.stderr)
 
-                # find the closest timestamp point
-                while printed_timestamp + args.delta <= read_timestamp:
-                    printed_timestamp+=args.delta
+        stats.update_from_one_read(read_stats)
 
-                if first_timestamp is None:
-                    first_timestamp=printed_timestamp
-
-                with open("{}/{}.tsv".format(args.pref, printed_timestamp), mode="w") as f:
-                    stats.print(file=f)
-                time=format_time(printed_timestamp-first_timestamp)
-                print("Time t={}: {} reads and {} non-propagated ({} propagated) assignments processed.".format(time, stats.nb_reads, stats.nb_nonprop_asgs, stats.nb_asgs), file=sys.stderr)
-
-        stats.update_oneread(read_stats)
+    stats.print(file=f)
+    f.close()
 
     with open(args.tsv, mode="w") as f:
         stats.print(file=f)

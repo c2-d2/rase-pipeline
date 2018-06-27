@@ -129,13 +129,16 @@ class Tsv:
             tsv_reader = csv.DictReader(f, delimiter='\t')
             rows=[]
             for r in tsv_reader:
+                if r["taxid"]=="_unassigned_":
+                    continue
+
                 rd={}
                 ###
                 rd['taxid']=r['taxid']
                 # count
                 rd['count']=float(r['count'])
-                # len
-                rd['len']=float(r['len'])
+                # ln
+                rd['ln']=float(r['ln'])
                 # h1
                 rd['h1']=float(r['h1'])
                 # c1
@@ -167,7 +170,7 @@ class Tsv:
 
         summary['datetime']=self.datetime
         summary['read count']=int(self.cumul_count())
-        summary['read len']=int(self.cumul_len())
+        summary['read len']=int(self.cumul_ln())
         summary['used bases']=int(self.cumul_c1())
 
 
@@ -176,11 +179,22 @@ class Tsv:
         #summary['PG1meas']='%s' % float('%.3g' % pg1_measmax)
         summary['PG2']=sorted_pgs[1]
         summary['PG2_meas']=round(pg2_measmax)
-        summary['PG_score']=2*(round(pg1_measmax/(pg1_measmax+pg2_measmax)*1000)/1000)-1
 
         summary['taxid']=predicted_taxid
         summary['serotype']=predicted_serotype
         summary['ST']=predicted_st
+
+        if pg1_measmax==0:
+            summary['PG1']="NA"
+            summary['taxid']="NA"
+            summary['serotype']="NA"
+            summary['ST']="NA"
+        if pg2_measmax==0:
+            summary['PG2']="NA"
+        if pg1_measmax>0:
+            summary['PG_score']=2*(round(pg1_measmax/(pg1_measmax+pg2_measmax)*1000)/1000)-1
+        else:
+            summary['PG_score']=0
 
 
         for ant in self.rtbl.ants:
@@ -188,21 +202,31 @@ class Tsv:
 
             # ant category
             cat_col=ant.upper()+"_cat"
-            predict_cat=self.rtbl.rcat[predicted_taxid][ant]
+            if pg1_measmax>0:
+                predict_cat=self.rtbl.rcat[predicted_taxid][ant]
+            else:
+                predict_cat="NA"
             summary[cat_col]=predict_cat
+
+            # todo: add a comment that we take the category of the best isolate; not the same as in the plots
 
             # susc score
             score_col=ant.upper()+"_susc_score"
             try:
                 s_meas=pres['S'][1]
                 r_meas=pres['R'][1]
-                susc_score=round(1000*s_meas/(r_meas+s_meas))/1000
+                if r_meas+s_meas>0:
+                    susc_score=round(1000*s_meas/(r_meas+s_meas))/1000
+                else:
+                    susc_score=0
             except KeyError:
                 # computing susc score fails
                 if predict_cat=='R':
                     susc_score=0.0
                 elif predict_cat=='S':
                     susc_score=1.0
+                elif predict_cat=='NA' and pg1_measmax==0:
+                    susc_score=0.0
                 elif predict_cat=='NA':
                     susc_score='NA'
 
@@ -279,8 +303,8 @@ class Tsv:
         return sum([self.measures[taxid]['count'] for taxid in self.measures])
 
 
-    def cumul_len(self):
-        return sum([self.measures[taxid]['len'] for taxid in self.measures])
+    def cumul_ln(self):
+        return sum([self.measures[taxid]['ln'] for taxid in self.measures])
 
 
     def cumul_c1(self):
