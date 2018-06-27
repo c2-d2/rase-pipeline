@@ -63,7 +63,7 @@ def transf(fq):
             if i % 4 == 0:
                 uuid, runid, read, ch, date, time = parse_header_line(x)
                 ts=timestamp_from_datetime(date, time)
-                print("@"+"Ts:{}_Ex:{}_Rd:{}_Ch:{}_".format(ts, runid[:9], uuid.partition("-")[0], ch))
+                print("@"+"{}_EX{}_RD{}_CH{}".format(ts, runid[:9], uuid.partition("-")[0], ch))
             else:
                 print(x,end="")
 
