@@ -47,19 +47,21 @@ kCatColors <- c("#ff0000", "#0000aa", '#00aa00')
 #############
 
 CatToColor <- function(cat) {
-  catu=toupper(cat)
+  catu = toupper(cat)
   ifelse(catu == "R", kCatColors[1], (ifelse(catu == "S", kCatColors[2], kCatColors[3])))
 }
 
 CatToNumber <- function(cat) {
-  catu=toupper(cat)
+  catu = toupper(cat)
   ifelse(catu == "R", 1, (ifelse(catu == "S", 2, 3)))
 }
 
 CatToCatName <- function(cat) {
-  catu=toupper(cat)
-  ifelse(catu == "S", "susceptible", (ifelse(catu ==
-                                              "R", "non-susceptible", "unknown")))
+  catu = toupper(cat)
+  ifelse(catu == "S", "susceptible", (ifelse(
+    catu ==
+      "R", "non-susceptible", "unknown"
+  )))
 }
 
 DfToAnts <- function(dataframe) {
@@ -87,25 +89,25 @@ if (kRStudio) {
                                   help = "sample description"))
   parser <-
     OptionParser(usage = "%prog [options] res_cats.tsv snapshot.tsv plot.pdf", option_list = option.list)
-
+  
   arguments <- parse_args(parser, positional_arguments = 3)
   opt <- arguments$options
-
+  
   sample.desc <- ""
   if (opt$desc) {
     sample.desc <- opt$desc
   }
-
+  
   res.file <- arguments$args[1]
   src.file <- arguments$args[2]
   out.file <- arguments$args[3]
-
+  
   timestamp <- as.integer(rev(strsplit(src.file, '[\\./]')[[1]])[2])
-
+  
   pdf(out.file,
       width = kWidth,
       height = kHeight)
-
+  
 }
 
 
@@ -118,18 +120,17 @@ palette(kPalette)
 
 dfres <- read.delim(res.file, header = T)
 dfsnap_with_unassigned <- read.delim(src.file, header = TRUE)
-dfsnap <- dfsnap_with_unassigned[dfsnap_with_unassigned$taxid!="_unassigned_",]
+dfsnap <-
+  dfsnap_with_unassigned[dfsnap_with_unassigned$taxid != "_unassigned_", ]
 
 stopifnot(length(dfsnap[, 1]) == length(dfres[, 1])) # are the lengths the same?
-stopifnot(
-  data.frame(lapply(dfsnap[order(dfsnap$taxid),][['taxid']], as.character)) ==
-  data.frame(lapply(dfres[order(dfres$taxid),][['taxid']], as.character))
-) # are the taxids the same?
+stopifnot(data.frame(lapply(dfsnap[order(dfsnap$taxid), ][['taxid']], as.character)) ==
+            data.frame(lapply(dfres[order(dfres$taxid), ][['taxid']], as.character))) # are the taxids the same?
 
 
 df <- merge(dfsnap, dfres, by = "taxid")
 
-sel <- df[with(df, order(-h1_norm)), ][1:kSelected,]
+sel <- df[with(df, order(-h1_norm)),][1:kSelected, ]
 
 first.phylogroup <- sel$phylogroup[[1]]
 first.serotype <- sel$Serotype.From.Reads[[1]]
@@ -182,7 +183,7 @@ for (ant in rev(antibiotics)) {
     axes = F,
     add = T
   )
-
+  
   text(
     x = -0.3,
     y = -y + 0.5 * AbsResGridHeight,
@@ -193,7 +194,7 @@ for (ant in rev(antibiotics)) {
     srt = 00,
     cex = 0.90
   )
-
+  
   i = i + 1
 }
 
@@ -295,10 +296,8 @@ text(
 #   cex = 0.45
 # )
 
-abline(
-  v=seq(0:kSelected),
-  col="white"
-)
+abline(v = seq(0:kSelected),
+       col = "white")
 
 text(
   y = -kGridShift * 0.5 * AbsResGridHeight,
@@ -383,4 +382,3 @@ mtext(
 if (!kRStudio) {
   dev.off()
 }
-
