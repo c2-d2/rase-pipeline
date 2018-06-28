@@ -18,7 +18,7 @@ replot:
 o2:
 	snakemake --cores 9999 -p \
 		--cluster-config cluster.o2.json \
-		--cluster 'sbatch -p {cluster.queue} -c {cluster.n} -t {cluster.time} --mem={cluster.memory}'
+		--cluster 'sbatch -p {cluster.queue} -c {cluster.n} -t {cluster.time} --mem={cluster.memory} -n {cluster.name} -o {cluster.output} -e {cluster.error}'
 
 help: ## Print help message
 	@echo "$$(grep -hE '^\S+:.*##' $(MAKEFILE_LIST) | sed -e 's/:.*##\s*/:/' -e 's/^\(.\+\):\(.*\)/\\x1b[36m\1\\x1b[m:\2/' | column -c2 -t -s : | sort)"
