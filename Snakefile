@@ -151,8 +151,12 @@ rule plot_timeline:
         pref="{pref}"
     shell:
         """
-            ./scripts/plot_selected_snapshots.py database/{wildcards.index}.tsv prediction/{wildcards.pref}__{wildcards.index} 1 5 -1 plots/{wildcards.pref}__{wildcards.index}.snapshots.
-            ./scripts/plot_timeline.R {params.tsv} {output.pdf}
+            ./scripts/plot_selected_snapshots.py "database/{wildcards.index}.tsv" "prediction/{wildcards.pref}__{wildcards.index}" 1 5 -1 "plots/{wildcards.pref}__{wildcards.index}.snapshots."
+            for x in plots/{wildcards.pref}__{wildcards.index}.snapshots.*; do
+                ./scripts/reproducible_pdf.sh "$x";
+            done
+            ./scripts/plot_timeline.R "{params.tsv}" "{output.pdf}"
+            ./scripts/reproducible_pdf.sh "{output.pdf}"
         """
 
 
