@@ -10,7 +10,7 @@ library(optparse)
 kIsRStudio <- Sys.getenv("RSTUDIO") == "1"
 
 if (kIsRStudio) {
-  src.file <- "../tests/sp09_norwich_7841__spneumoniae_sparc.k32.predict.tsv"
+  src.file <- "../tests/sp09_norwich_7841__spneumoniae_sparc.k18.predict.tsv"
 } else {
   parser <-
     OptionParser(usage = "%prog [options] timeline.tsv plot.pdf")
@@ -101,7 +101,7 @@ DfToFlags <- function(dataframe) {
   df.1$pch <- rep(4, nrow(df.1))
 
   df.2 <- dataframe[grep("S:PG2", dataframe$flags), ]
-  df.2$pch <- rep(3, nrow(df.2))
+  df.2$pch <- rep(1, nrow(df.2))
 
   df.3 <- dataframe[grep("S:taxid", dataframe$flags), ]
   df.3$pch <- rep(0, nrow(df.3))
@@ -235,9 +235,9 @@ PlotReads <- function(i) {
 
   if (i == 1) {
     legend("topleft",
-           c("First PG stabilized", "Second PG  stabilized", "Isolate stabilized"),
+           c("Predicted PG stabilized", "Alternative PG  stabilized", "Isolate stabilized"),
            bg="white",
-           pch = c(4, 3, 0))
+           pch = c(4, 1, 0))
   }
 }
 
