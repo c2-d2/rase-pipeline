@@ -132,7 +132,7 @@ rule classify:
         """
 
 
-rule quantify_complete:
+rule quantify:
     priority: 70
     input:
         "prediction/.{pref}__{index}.bam.complete",
