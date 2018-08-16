@@ -30,10 +30,10 @@ def find_db_files(suffix, smallest_only=False):
 indexes_base_tsv=find_db_files("tsv")
 
 indexes_base_tar=find_db_files("tar.gz")
-indexes=set(indexes_base_tsv) & set(indexes_base_tar)
+indexes=sorted(list(set(indexes_base_tsv) & set(indexes_base_tar)))
 
 indexes_base_tar_smallest=find_db_files("tar.gz", smallest_only=True)
-smallest_index=set(indexes_base_tsv) & set(indexes_base_tar_smallest)
+smallest_index=list(set(indexes_base_tsv) & set(indexes_base_tar_smallest))
 
 print("Indexes:", indexes)
 if len(indexes)==0:
@@ -47,7 +47,7 @@ if len(indexes)==0:
 # 2) Detect experiments
 
 fastqs=glob.glob("reads/*.fq")
-experiments=[os.path.basename(x[:-3]) for x in fastqs]
+experiments=sorted([os.path.basename(x[:-3]) for x in fastqs])
 smallest_experiment=[os.path.basename(smallest_file(fastqs)[:-3])]
 print("Experiments:", experiments)
 if len(experiments)==0:
