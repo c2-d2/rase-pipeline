@@ -25,7 +25,7 @@ def find_db_files(suffix, smallest_only=False):
     fns=glob.glob("database/*.{}".format(suffix))
     if smallest_only:
         fns=[smallest_file(fns)]
-    return [os.path.basename(x).replace("."+suffix,"") for x in fns]
+    return [os.path.basename(fn).replace("."+suffix,"") for fn in fns]
 
 indexes_base_tsv=find_db_files("tsv")
 
@@ -44,12 +44,11 @@ if len(indexes)==0:
     print("!!!! ", file=sys.stderr)
 
 
-
 # 2) Detect experiments
 
 fastqs=glob.glob("reads/*.fq")
 experiments=[os.path.basename(x[:-3]) for x in fastqs]
-smallest_experiment=os.path.basename(smallest_file(fastqs)[:-3])
+smallest_experiment=[os.path.basename(smallest_file(fastqs)[:-3])]
 print("Experiments:", experiments)
 if len(experiments)==0:
     print("!!!! ", file=sys.stderr)
