@@ -9,12 +9,32 @@ snakemake.shell("(./scripts/test_environments.sh 2>&1) >/dev/null || ./scripts/t
 
 # 1) Detect indexes
 
-def find_db_files(suffix):
-    return [os.path.basename(x).replace("."+suffix,"") for x in glob.glob("database/*.{}".format(suffix))]
+def file_size(fn):
+    return os.stat(fn).st_size
+
+def smallest_file(fns):
+    size=0
+    sfn=None
+    for fn in fns:
+        if file_size(fn)>size:
+            size=file_size(fn)
+            sfn=fn
+    return sfn
+
+def find_db_files(suffix, smallest_only=False):
+    fns=glob.glob("database/*.{}".format(suffix))
+    if smallest_only:
+        fns=[smallest_file(fns)]
+    return [os.path.basename(x).replace("."+suffix,"") for x in fns]
 
 indexes_base_tsv=find_db_files("tsv")
+
 indexes_base_tar=find_db_files("tar.gz")
 indexes=set(indexes_base_tsv) & set(indexes_base_tar)
+
+indexes_base_tar_smallest=find_db_files("tar.gz", smallest_only=True)
+smallest_index=set(indexes_base_tsv) & set(indexes_base_tar_smallest)
+
 print("Indexes:", indexes)
 if len(indexes)==0:
     print("!!!! ", file=sys.stderr)
@@ -27,7 +47,9 @@ if len(indexes)==0:
 
 # 2) Detect experiments
 
-experiments=[os.path.basename(x[:-3]) for x in glob.glob("reads/*.fq")]
+fastqs=glob.glob("reads/*.fq")
+experiments=[os.path.basename(x[:-3]) for x in fastqs]
+smallest_experiment=os.path.basename(smallest_file(fastqs)[:-3])
 print("Experiments:", experiments)
 if len(experiments)==0:
     print("!!!! ", file=sys.stderr)
@@ -54,8 +76,23 @@ rule all:
             ]
             for e in experiments
         ],
-        ##"database/{}.complete".format(index)
-        #"prediction/{pref}.bam.complete"
+
+
+rule test:
+    input:
+        [
+            [
+                [
+                    "prediction/.{}.fq.complete".format(e),
+                    "prediction/.{}__{}.bam.complete".format(e, i),
+                    "prediction/.{}__{}.quantify.complete".format(e, i),
+                    "prediction/.{}__{}.predict.complete".format(e, i),
+                    "plots/{}__{}.timeline.pdf".format(e, i),
+                ]
+                for i in smallest_index
+            ]
+            for e in smallest_experiment
+        ],
 
 
 rule preprocess_reads:

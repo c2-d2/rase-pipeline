@@ -11,6 +11,9 @@ SM=snakemake -j -p
 all:
 	$(SM)
 
+test:
+	$(SM) test
+
 replot:
 	rm plots/*.pdf
 	$(SM)
