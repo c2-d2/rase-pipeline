@@ -8,17 +8,17 @@ SM=snakemake -j -p
 
 .SUFFIXES:
 
-all:
+all: ## Run everything
 	$(SM)
 
-test:
+test: ## Run the smallest experiment
 	$(SM) test
 
-replot:
+replot: ## Replot all figures
 	rm plots/*.pdf
 	$(SM)
 
-o2:
+o2: ## Submit jobs to Harvard O2
 	snakemake --cores 9999 -p \
 		--cluster-config cluster.o2.json \
 		--cluster 'sbatch -p {cluster.queue} -c {cluster.n} -t {cluster.time} --mem={cluster.memory} --job-name {cluster.name} -o {cluster.output} -e {cluster.error}'
@@ -34,6 +34,7 @@ clean: ## Clean
 	find prediction -name '*.tsv' | xargs rm -f
 	rm -f benchmarks/*.predict.log
 
+cleanall: ## Clean all files (including bam files and logs)
 cleanall: clean
 	rm -f prediction/*.{fq,fq.complete} benchmarks/*.readprep.log
 	rm -f prediction/*.bam
