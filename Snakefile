@@ -13,11 +13,12 @@ def file_size(fn):
     return os.stat(fn).st_size
 
 def smallest_file(fns):
-    size=0
+    size=10**30
     sfn=None
     for fn in fns:
-        if file_size(fn)>size:
-            size=file_size(fn)
+        rfn=os.path.realpath(fn)
+        if file_size(rfn)<size:
+            size=file_size(rfn)
             sfn=fn
     return sfn
 
