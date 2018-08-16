@@ -1,3 +1,4 @@
+export.tar
 *.out
 .*.complete
 .snakemake/

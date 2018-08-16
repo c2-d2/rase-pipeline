@@ -1,8 +1,9 @@
-.PHONY: all help clean cleanall o2
+.PHONY: all help clean cleanall o2 export
 
 SHELL=/usr/bin/env bash -eo pipefail
 
 SM=snakemake -j -p
+EXPORTED=export.tar
 
 .SECONDARY:
 
@@ -17,6 +18,15 @@ test: ## Run the smallest experiment
 replot: ## Replot all figures
 	rm plots/*.pdf
 	$(SM)
+
+export: ## Export all outputs
+	rm -f $(EXPORTED)
+	tar cvf $(EXPORTED) --files-from /dev/null
+	for x in benchmarks/*.log prediction/*.tsv plots/*.pdf; do \
+		tar --append --file=$(EXPORTED) $$x; \
+	done
+
+
 
 o2: ## Submit jobs to Harvard O2
 	snakemake --cores 9999 -p \
@@ -33,6 +43,7 @@ clean: ## Clean
 	rm -f prediction/*.predict.complete
 	find prediction -name '*.tsv' | xargs rm -f
 	rm -f benchmarks/*.predict.log
+	rm -f $(EXPORT)
 
 cleanall: ## Clean all files (including bam files and logs)
 cleanall: clean
