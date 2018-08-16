@@ -31,7 +31,7 @@ clean: ## Clean
 	rm -f prediction/.*.quantify.complete benchmarks/*.quantify.log
 	rm -f prediction/*.predict.tsv
 	rm -f prediction/*.predict.complete
-	find prediction -name '*.tsv' | xargs rm
+	find prediction -name '*.tsv' | xargs rm -f
 	rm -f benchmarks/*.predict.log
 
 cleanall: clean
