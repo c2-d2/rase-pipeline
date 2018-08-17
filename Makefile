@@ -3,7 +3,7 @@
 SHELL=/usr/bin/env bash -eo pipefail
 
 SM=snakemake -j -p
-EXPORTED=export.tar
+EXPORTED=rase.results.tar
 
 .SECONDARY:
 
@@ -43,7 +43,7 @@ clean: ## Clean
 	rm -f prediction/*.predict.complete
 	find prediction -name '*.tsv' | xargs rm -f
 	rm -f benchmarks/*.predict.log
-	rm -f $(EXPORT)
+	rm -f $(EXPORTED)
 
 cleanall: ## Clean all files (including bam files and logs)
 cleanall: clean
