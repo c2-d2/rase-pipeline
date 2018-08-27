@@ -9,6 +9,10 @@ snakemake.shell("(./scripts/test_environments.sh 2>&1) >/dev/null || ./scripts/t
 
 # 1) Detect indexes
 
+def remove_suffix(fn):
+    parts=fn.split(".")
+    return ".".join(parts[:-1])
+
 def file_size(fn):
     return os.stat(fn).st_size
 
@@ -48,8 +52,9 @@ if len(indexes)==0:
 # 2) Detect experiments
 
 fastqs=glob.glob("reads/*.fq")
-experiments=sorted([os.path.basename(x[:-3]) for x in fastqs])
-smallest_experiment=[os.path.basename(smallest_file(fastqs)[:-3])]
+print("Detected FASTQ files:", fastqs)
+experiments=sorted([os.path.basename(remove_suffix(x)) for x in fastqs])
+smallest_experiment=[os.path.basename(remove_suffix(smallest_file(fastqs)))]
 print("Experiments:", experiments)
 if len(experiments)==0:
     print("!!!! ", file=sys.stderr)
