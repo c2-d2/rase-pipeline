@@ -3,7 +3,6 @@
 SHELL=/usr/bin/env bash -eo pipefail
 
 SM=snakemake -j -p
-EXPORTED=rase.results.tar
 
 .SECONDARY:
 
@@ -20,10 +19,12 @@ replot: ## Replot all figures
 	$(SM)
 
 export: ## Export all outputs
-	rm -f $(EXPORTED)
-	tar cvf $(EXPORTED) --files-from /dev/null
+	d=$$(date +"%Y-%m-%d_%H-%M"); \
+	f="rase_exported.$$d.tar"; \
+	rm -f $$f; \
+	tar cvf $$f --files-from /dev/null; \
 	for x in benchmarks/*.log prediction/*.tsv plots/*.pdf; do \
-		tar --append --file=$(EXPORTED) $$x; \
+		tar --append --file=$$f $$x; \
 	done
 
 
@@ -43,7 +44,7 @@ clean: ## Clean
 	rm -f prediction/*.predict.complete
 	find prediction -name '*.tsv' | xargs rm -f
 	rm -f benchmarks/*.predict.log
-	rm -f $(EXPORTED)
+	rm -f exported.*.tar
 
 cleanall: ## Clean all files (including bam files and logs)
 cleanall: clean
