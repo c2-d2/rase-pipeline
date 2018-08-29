@@ -1,3 +1,9 @@
+"""
+Author:  Karel Brinda <kbrinda@hsph.harvard.edu>
+
+License: MIT
+"""
+
 import glob
 import os
 import sys

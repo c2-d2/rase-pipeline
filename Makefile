@@ -1,3 +1,9 @@
+#
+# Author:  Karel Brinda <kbrinda@hsph.harvard.edu>
+#
+# License: MIT
+#
+
 .PHONY: all help clean cleanall o2 export
 
 SHELL=/usr/bin/env bash -eo pipefail

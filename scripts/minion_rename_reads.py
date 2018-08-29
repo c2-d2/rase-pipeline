@@ -1,5 +1,11 @@
 #! /usr/bin/env python3
 
+"""
+Author:  Karel Brinda <kbrinda@hsph.harvard.edu>
+
+License: MIT
+"""
+
 import argparse
 import datetime
 import json

@@ -1,5 +1,11 @@
 #!/usr/bin/env Rscript
 
+#
+# Author: Karel Brinda <kbrinda@hsph.harvard.edu>
+#
+# License: MIT
+#
+
 library(optparse)
 
 
@@ -89,25 +95,25 @@ if (kRStudio) {
                                   help = "sample description"))
   parser <-
     OptionParser(usage = "%prog [options] res_cats.tsv snapshot.tsv plot.pdf", option_list = option.list)
-  
+
   arguments <- parse_args(parser, positional_arguments = 3)
   opt <- arguments$options
-  
+
   sample.desc <- ""
   if (opt$desc) {
     sample.desc <- opt$desc
   }
-  
+
   res.file <- arguments$args[1]
   src.file <- arguments$args[2]
   out.file <- arguments$args[3]
-  
+
   timestamp <- as.integer(rev(strsplit(src.file, '[\\./]')[[1]])[2])
-  
+
   pdf(out.file,
       width = kWidth,
       height = kHeight)
-  
+
 }
 
 
@@ -183,7 +189,7 @@ for (ant in rev(antibiotics)) {
     axes = F,
     add = T
   )
-  
+
   text(
     x = -0.3,
     y = -y + 0.5 * AbsResGridHeight,
@@ -194,7 +200,7 @@ for (ant in rev(antibiotics)) {
     srt = 00,
     cex = 0.90
   )
-  
+
   i = i + 1
 }
 

@@ -1,5 +1,11 @@
 #! /usr/bin/env python3
 
+"""
+Author:  Karel Brinda <kbrinda@hsph.harvard.edu>
+
+License: MIT
+"""
+
 import argparse
 import collections
 import os
@@ -8,10 +14,6 @@ import pysam
 import json
 import ete3
 
-"""Quantify assignments on the level of leaves.
-
-Assignment: Dictionary with entries name, qlen, h1, c1.
-"""
 
 FAKE_ISOLATE_UNASSIGNED="_unassigned_"
 
@@ -60,7 +62,7 @@ class Stats:
 
         # stats for unassigned reads
         self.nb_unassigned_reads=0
-       
+
         # cumulative statistics for assigned reads
         self.cumul_h1_pow1=0.0
         self.cumul_c1_pow1=0.0
@@ -80,7 +82,7 @@ class Stats:
 
     def get_number_of_assigned_strains(self, asgs):
         l=0
-        for asg in asgs: 
+        for asg in asgs:
             l+=len(self.descending_isolates[asg["rname"]])
         return l
 
@@ -97,7 +99,7 @@ class Stats:
 
         if is_assigned:
             l=self.get_number_of_assigned_strains(asgs)
-            
+
             self.nb_assigned_reads+=1
             self.nb_nonprop_asgs+=len(asgs)
             self.nb_asgs+=l

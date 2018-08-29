@@ -1,5 +1,11 @@
 #! /usr/bin/env bash
 
+#
+# Author:  Karel Brinda <kbrinda@hsph.harvard.edu>
+#
+# License: MIT
+#
+
 set -e
 set -o pipefail
 
