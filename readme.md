@@ -1,4 +1,4 @@
-# RASE databases
+# RASE prediction pipeline
 
 ## Prerequisites
 
