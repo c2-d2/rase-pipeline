@@ -15,3 +15,8 @@ conda install prophyle ete3 pysam snakemake samtools parallel r-optparse
 * `reads` - Minion reads
 * `scripts` - RASE scripts
 * `tests` - testing data
+
+## Contact
+
+Karel Brinda \<kbrinda@hsph.harvard.edu\>
+
