@@ -4,7 +4,7 @@
 # License: MIT
 #
 
-.PHONY: all help clean cleanall o2 export
+.PHONY: all help clean cleanall readme o2 export
 
 SHELL=/usr/bin/env bash -eo pipefail
 
@@ -59,4 +59,7 @@ cleanall: clean
 	rm -f prediction/.*.complete
 	rm -f benchmarks/*.classify.log
 	rm -fr database/.*.complete $$(ls -d database/*/ 2>/dev/null || true) benchmarks/decompress.log
+
+readme: ## Generate readme.htmljjj
+	markdown_py readme.md > readme.html
 
