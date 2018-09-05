@@ -3,9 +3,11 @@
 ## Introduction
 
 This repository contains the RASE prediction pipeline. The method uses lineage
-calling to identify antibiotic resistant clusters from MinION reads. In our
-paper, demonstrate on the example of pneumococcus that, using this approach,
-antibiotic resistance can be predicted within minutes.
+calling to identify antibiotic resistant clones from nanopore reads. In our
+[paper](https://www.biorxiv.org/content/early/2018/08/29/403204), we
+demonstrate on the example of pneumococcus that, using this approach,
+antibiotic resistance can be predicted within minutes from the start of
+sequencing.
 
 ## Overview of the pipeline
 
@@ -64,9 +66,9 @@ ProPhyle index (`.tar`) and a table with metadata for individual database
 isolates (`.tsv`). To be properly detected, both of the files should have the
 same base name.
 
-The default RASE database (S.pneumoniae, k=18) can be downloaded from [RASE DB
-releases](https://github.com/c2-d2/rase-db/releases). A custom database can be
-constructed using scripts and workflows from the [RASE DB
+The default RASE database (Streptococcus pneumoniae, k=18) can be downloaded
+from [RASE DB releases](https://github.com/c2-d2/rase-db/releases). A custom
+database can be constructed using scripts and workflows from the [RASE DB
 repository](https://github.com/c2-d2/rase-db).
 
 **Placing nanopore reads.** Nanopore reads should be placed into the `reads`
@@ -75,7 +77,9 @@ directory as one `.fq` for each experiment.
 
 ## Running RASE
 
-**Running prediction locally.** The RASE pipeline can be executed by the Make command:
+**Running prediction locally.** The RASE pipeline can be executed by the Make
+command (all steps, i.e., preprocessing, predicting, and plotting):
+
 ```
 make
 ```
@@ -114,6 +118,16 @@ help`.
 * `reads` - Minion reads
 * `scripts` - RASE scripts
 * `tests` - testing data
+
+
+## Publication
+
+Karel Brinda, Alanna Callendrello, Lauren Cowley, Themoula Charalampous, Robyn
+S Lee, Derek R MacFadden, Gregory Kucherov, Justin O'Grady, Michael Baym,
+William P Hanage. **Lineage calling can identify antibiotic resistant clones
+within minutes.** [bioRxiv
+403204](https://www.biorxiv.org/content/early/2018/08/29/403204), doi:
+https://doi.org/10.1101/403204, 2018.
 
 ## Contact
 
