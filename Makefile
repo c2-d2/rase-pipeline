@@ -60,6 +60,6 @@ cleanall: clean
 	rm -f benchmarks/*.classify.log
 	rm -fr database/.*.complete $$(ls -d database/*/ 2>/dev/null || true) benchmarks/decompress.log
 
-readme: ## Generate readme.htmljjj
+readme: ## Generate readme.html
 	markdown_py readme.md > readme.html
 
