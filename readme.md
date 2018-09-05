@@ -27,6 +27,10 @@ rank plots for selected moments, are visualized using R.
 
 ## Quick example
 
+The following example demonstrates the power of RASE with metagenomic reads.
+The entire computation takes only 6m on a standard laptop (MacBook Pro). Note
+that this is the experiment from Figure 3 (with human reads removed in-silico).
+
 ```bash
 # add Bioconda channels, and create and activate an environment for RASE
 conda config --add channels defaults
