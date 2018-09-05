@@ -129,12 +129,21 @@ help`.
 * `benchmarks` - Snakemake benchmarks. As soon as any step of the pipeline gets
   finished, a log file with information about timing and memory consumption
   will appear here.
-* `database` - Source database files. Each database should consist of two files: `<db>.tar.gz` and `<db>.tsv`.
+* `database` - Source database files. Each database should consist of two
+  files: `<db>.tar.gz` and `<db>.tsv`.
 * `plots` - Plotted figures.
    - `<experiment>__<db>.timeline.pdf` - prediction as a function of time
-   - `<experiment>__<db>.snapshot.<time>.pdf` - rank plot for selected times (1 minute, 5 minutes, last minute)
+   - `<experiment>__<db>.snapshot.<time>.pdf` - rank plot for selected times (1
+	 minute, 5 minutes, last minute)
 * `prediction` - prediction files
-   - `<experiment>__<db>.predict.tsv` - prediction output (each row corresponds to one minute)
+   - `<experiment>__<db>.fq` - nanopore reads after renaming and sorting by
+	 timestamp
+   - `<experiment>__<db>.bam` - reads mapped onto the phylogenetic tree using
+	 ProPhyle
+   - `<experiment>__<db>/<timestamp>.tsv` - weights calculated for all isolates
+	 at that time; `h1` corresponds to the weights used in the paper
+   - `<experiment>__<db>.predict.tsv` - prediction timeline (each row
+	 corresponds to one minute)
 * `reads` - nanopore reads (`<experiment>.fq`)
 * `scripts` - RASE scripts
 * `tests` - testing data for scripts
