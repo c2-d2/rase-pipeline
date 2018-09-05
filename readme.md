@@ -1,5 +1,6 @@
 # RASE prediction pipeline
 
+
 ## Introduction
 
 This repository contains the RASE prediction pipeline. The method uses lineage
@@ -7,21 +8,20 @@ calling to identify antibiotic resistant clones from nanopore reads. In our
 [paper](https://www.biorxiv.org/content/early/2018/08/29/403204), we
 demonstrate on the example of pneumococcus that, using this approach,
 antibiotic resistance can be predicted within minutes from the start of
-sequencing.
+sequencing. Please, look at the paper for more information.
 
-## Overview of the pipeline
-
-The main [Snakemake](https://snakemake.readthedocs.io/) workflow is specified
-in a single [Snakefile](Snakefile).  The pipeline starts by detecting the
-provided RASE database(s) (in `database`) and nanopore reads (in `reads`). Both of
-these are then pre-processed: reads are sorted by time and the database is
-uncompressed (i.e., the internal k-mer index reconstructed).
-
-The reads are then compared to the database using
-[ProPhyle](http://prophyle.github.io) and isolate, phylogroup, and resistance
-to individual antibiotics predicted (as a function of time). Finally, the
-obtained functions, as well as rank plots for selected moments, are plotted
-using R.
+The RASE [Snakemake](https://snakemake.readthedocs.io/) workflow is specified
+within a single [Snakefile](Snakefile). When executed, the pipeline first
+detects the provided RASE database(s) (in `database`) and nanopore reads (in
+`reads`), and generates all possible `db`-`experiment` combinations. In
+practise, the most common scenario is usally "1 db vs. many experiments". After
+the detection step, reads and database are pre-processed: reads are sorted by
+time and the database uncompressed (i.e., the full internal ProPhyle k-mer
+index is restored). Subsequently, reads are compared to the database(s) using
+[ProPhyle](http://prophyle.github.io), and isolate, phylogroup, and resistance
+to individual antibiotics predicted - as a function of time.  Finally, the
+obtained time functions, as well as rank plots for selected moments, are
+plotted using R.
 
 
 ## Installation of RASE
@@ -31,24 +31,27 @@ preferred way of installation of the software dependencies. We recommend to
 create a separate software environment (here called `rase`):
 
 ```
-conda create -n rase prophyle ete3 pysam snakemake samtools parallel r-optparse
+conda create -n rase \
+	prophyle ete3 pysam snakemake samtools parallel r-optparse
 ```
 
-and then activate it by
+The environment then can be activated by
 
 ```
 source activate rase
 ```
 
-Alternatively, the packages can be installed into the default Conda environment.
+Alternatively, the packages can be installed into the default Conda
+environment, but this is not always reliable due to possible collisions with
+with the packages that have been installed previously (e.g., Python 2).
 
 ```
 conda install prophyle ete3 pysam snakemake samtools parallel r-optparse
 ```
 
 Please note that, at some systems, the R package distributed by Conda might not
-be properly built. The solution is then to create the environment without
-`r-optparse`, and to install R and the Optparse package manually.
+be properly built. The solution is then to create the `rase` environment
+without `r-optparse`, and to install R and the Optparse package manually.
 
 
 **Cloning the RASE pipeline.**
@@ -131,6 +134,7 @@ help`.
   will appear here.
 * `database` - Source database files. Each database should consist of two
   files: `<db>.tar.gz` and `<db>.tsv`.
+* `logs` - logs from job submission systems
 * `plots` - Plotted figures.
    - `<experiment>__<db>.timeline.pdf` - prediction as a function of time
    - `<experiment>__<db>.snapshot.<time>.pdf` - rank plot for selected times (1
@@ -154,11 +158,12 @@ help`.
 Karel Brinda, Alanna Callendrello, Lauren Cowley, Themoula Charalampous, Robyn
 S Lee, Derek R MacFadden, Gregory Kucherov, Justin O'Grady, Michael Baym,
 William P Hanage. **Lineage calling can identify antibiotic resistant clones
-within minutes.** [bioRxiv
-403204](https://www.biorxiv.org/content/early/2018/08/29/403204), doi:
-https://doi.org/10.1101/403204, 2018.
+within minutes.**
+bioRxiv, 2018.
+doi:[10.1101/403204](https://doi.org/10.1101/403204)
+
 
 ## Contact
 
-Karel Brinda \<kbrinda@hsph.harvard.edu\>
+[Karel Brinda](https://scholar.harvard.edu/brinda) \<kbrinda@hsph.harvard.edu\>
 
