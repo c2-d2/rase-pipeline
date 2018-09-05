@@ -72,7 +72,9 @@ database can be constructed using scripts and workflows from the [RASE DB
 repository](https://github.com/c2-d2/rase-db).
 
 **Placing nanopore reads.** Nanopore reads should be placed into the `reads`
-directory as one `.fq` for each experiment.
+directory as a single `.fq` file per sequencing experiment. Please, check the
+suffix: `.fastq` files are not currently detected. Reads that were used in the paper
+can be downloaded from https://zenodo.org/record/1405173.
 
 
 ## Running RASE
