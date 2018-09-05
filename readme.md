@@ -12,16 +12,17 @@ sequencing. Please, look at the paper for more information.
 
 The RASE [Snakemake](https://snakemake.readthedocs.io/) workflow is specified
 within a single [Snakefile](Snakefile). When executed, the pipeline first
-detects the provided RASE database(s) (in `database`) and nanopore reads (in
-`reads`), and generates all possible `db`-`experiment` combinations. In
-practise, the most common scenario is usally "1 db vs. many experiments". After
-the detection step, reads and database are pre-processed: reads are sorted by
-time and the database uncompressed (i.e., the full internal ProPhyle k-mer
-index is restored). Subsequently, reads are compared to the database(s) using
-[ProPhyle](http://prophyle.github.io), and isolate, phylogroup, and resistance
-to individual antibiotics predicted - as a function of time.  Finally, the
-obtained time functions, as well as rank plots for selected moments, are
-plotted using R.
+detects the provided RASE database(s) (in the `database` directory) and
+nanopore reads (in the `reads` directory), and generates all
+`<db>`-`<experiment>` combinations. In practice, the most common scenario is
+usally "1 db vs. many experiments". After the detection step, reads and
+database are pre-processed: reads are sorted by time of sequencing and the
+database gets uncompressed (i.e., the full internal ProPhyle k-mer index
+restored).  Subsequently, nanopore reads from individual experiments are
+compared to the database(s) using [ProPhyle](http://prophyle.github.io), and
+isolate, phylogroup and resistance to individual antibiotics predicted - all
+as a function of time.  Finally, the obtained time characteristics, as well as
+rank plots for selected moments, are visualized using R.
 
 
 ## Installation of RASE
@@ -35,7 +36,7 @@ conda create -n rase \
 	prophyle ete3 pysam snakemake samtools parallel r-optparse
 ```
 
-The environment then can be activated by
+The environment can then be activated by
 
 ```
 source activate rase
