@@ -28,7 +28,7 @@ rank plots for selected moments, are visualized using R.
 ## Installing of RASE
 
 **Installing dependencies.** [Bioconda](https://bioconda.github.io/) is the
-preferred way of installation of the software dependencies. We recommend to
+preferred way of their installation. We recommend to
 create a separate software environment (here called `rase`):
 
 ```
@@ -42,17 +42,18 @@ The environment can then be activated by
 source activate rase
 ```
 
-Alternatively, the packages can be installed into the default Conda
-environment, but this is not always reliable due to possible collisions with
-with the packages that have been installed previously (e.g., Python 2).
+Alternatively, the packages can also be installed directly into the default
+Conda environment. Nevertheless, this is not always reliable as there might be
+collisions with packages that were installed previously.
 
 ```
 conda install prophyle ete3 pysam snakemake samtools parallel r-optparse
 ```
 
-Please note that, at some systems, the R package distributed by Conda might not
-be properly built. The solution is then to create the `rase` environment
-without `r-optparse`, and to install R and the Optparse package manually.
+Please note that, at some systems (especially in the HPC setting), the R
+package distributed by Conda might not be properly built. The solution is then
+to create the `rase` environment without `r-optparse`, and to install R and the
+Optparse package manually.
 
 
 **Cloning the RASE pipeline.**
@@ -128,7 +129,7 @@ files.
 help`.
 
 
-## Structure of the repository
+## Structure of the files and directories
 
 * `benchmarks` - Snakemake benchmarks. As soon as any step of the pipeline gets
   finished, a log file with information about timing and memory consumption
@@ -152,6 +153,18 @@ help`.
 * `reads` - nanopore reads (`<experiment>.fq`)
 * `scripts` - RASE scripts
 * `tests` - testing data for scripts
+
+
+## FAQs
+
+> Do I need a cluster to run RASE?
+
+No, RASE is designed primarily for laptops; the memory requirements are low
+(hundreds of MB) and the slowest step, read assignment, usually takes between
+several minutes up to 2 hours, in dependence on the sequencing throughput.
+Nevertheless, a cluster might be useful when there are many sequencing
+experiments to be processed at the same time, or a battery of databases to be
+evaluated. In most of situations, we run everything on MacBooks.
 
 
 ## Citing RASE
