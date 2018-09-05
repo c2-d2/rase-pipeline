@@ -13,7 +13,7 @@ sequencing.
 
 The main [Snakemake](https://snakemake.readthedocs.io/) workflow is specified
 in a single [Snakefile](Snakefile).  The pipeline starts by detecting the
-provided RASE databases (in `database`) and MinION reads (in `reads`). Both of
+provided RASE database(s) (in `database`) and nanopore reads (in `reads`). Both of
 these are then pre-processed: reads are sorted by time and the database is
 uncompressed (i.e., the internal k-mer index reconstructed).
 
@@ -74,8 +74,10 @@ repository](https://github.com/c2-d2/rase-db).
 
 **Placing nanopore reads.** Nanopore reads should be placed into the `reads`
 directory as a single `.fq` file per sequencing experiment. Please, check the
-suffix: `.fastq` files are not currently detected. Reads that were used in the paper
-can be downloaded from https://zenodo.org/record/1405173.
+suffix: `.fastq` files are not currently detected. Also, the pipeline assumes
+that the provided reads keep the original naming convention from ONT. Reads
+that were used in the paper can be downloaded from
+https://zenodo.org/record/1405173.
 
 
 ## Running RASE
@@ -128,7 +130,7 @@ help`.
 * `database` - source database files
 * `plots` - created plots
 * `prediction` - intermediate prediction files
-* `reads` - Minion reads
+* `reads` - nanopore reads
 * `scripts` - RASE scripts
 * `tests` - testing data
 
