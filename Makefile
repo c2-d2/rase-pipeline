@@ -4,7 +4,7 @@
 # License: MIT
 #
 
-.PHONY: all help clean cleanall readme o2 export
+.PHONY: all help clean cleanall readme cluster export
 
 SHELL=/usr/bin/env bash -eo pipefail
 
@@ -35,9 +35,9 @@ export: ## Export all outputs
 
 
 
-o2: ## Submit jobs to Harvard O2
+cluster: ## Submit jobs to a cluster
 	snakemake --cores 9999 -p \
-		--cluster-config cluster.o2.json \
+		--cluster-config cluster.json \
 		--cluster 'sbatch -p {cluster.queue} -c {cluster.n} -t {cluster.time} --mem={cluster.memory} --job-name {cluster.name} -o {cluster.output} -e {cluster.error}'
 
 help: ## Print help message

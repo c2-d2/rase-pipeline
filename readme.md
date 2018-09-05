@@ -97,9 +97,10 @@ make test
 
 **Running prediction on a cluster.** When multiple experiments and multiple
 databases are combined, it can be useful to parallelize the computation. In the
-default setting, RASE support the Harvard O2 cluster (Slurm-based), but the
-configuration files are easy to adjust. Submitting to a cluster using Snakemake
-can be done by `make o2`.
+default setting, RASE supports the [Harvard O2
+cluster](https://rc.hms.harvard.edu/#cluster) (Slurm-based), but the
+[configuration file](cluster.json) can be easily adjusted. Submitting to a
+cluster using Snakemake can be done by `make cluster`.
 
 **Exporting outputs.** Outputs of the pipeline can be exported to a single
 `.tar` archive by `make export`.
