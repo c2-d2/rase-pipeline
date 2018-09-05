@@ -28,11 +28,13 @@ rank plots for selected moments, are visualized using R.
 ## Quick example
 
 ```bash
-# add Bioconda channels and install the RASE dependencies
+# add Bioconda channels, and create and activate an environment for RASE
 conda config --add channels defaults
 conda config --add channels conda-forge
 conda config --add channels bioconda
-conda install -y prophyle ete3 pysam snakemake samtools parallel r-optparse
+conda env list | grep ^rase \
+	|| conda install -y -n rase prophyle ete3 pysam snakemake samtools parallel r-optparse
+source activate rase
 
 # clone this repository
 git clone https://github.com/c2-d2/rase-pipeline
