@@ -124,15 +124,20 @@ files.
 help`.
 
 
-## Structure of the repository directories
+## Structure of the repository
 
-* `benchmarks` - Snakemake benchmarks
-* `database` - source database files
-* `plots` - created plots
-* `prediction` - intermediate prediction files
-* `reads` - nanopore reads
+* `benchmarks` - Snakemake benchmarks. As soon as any step of the pipeline gets
+  finished, a log file with information about timing and memory consumption
+  will appear here.
+* `database` - Source database files. Each database should consist of two files: `<db>.tar.gz` and `<db>.tsv`.
+* `plots` - Plotted figures.
+   - `<experiment>__<db>.timeline.pdf` - prediction as a function of time
+   - `<experiment>__<db>.snapshot.<time>.pdf` - rank plot for selected times (1 minute, 5 minutes, last minute)
+* `prediction` - prediction files
+   - `<experiment>__<db>.predict.tsv` - prediction output (each row corresponds to one minute)
+* `reads` - nanopore reads (`<experiment>.fq`)
 * `scripts` - RASE scripts
-* `tests` - testing data
+* `tests` - testing data for scripts
 
 
 ## Publication
