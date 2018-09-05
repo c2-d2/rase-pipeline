@@ -26,9 +26,9 @@ using R.
 
 ## Installation of RASE
 
-**Installing dependencies.**
-Bioconda is the preferred way of installation of the software dependencies. We
-recommend to create a separate software environment (here called `rase`):
+**Installing dependencies.** [Bioconda](https://bioconda.github.io/) is the
+preferred way of installation of the software dependencies. We recommend to
+create a separate software environment (here called `rase`):
 
 ```
 conda create -n rase prophyle ete3 pysam snakemake samtools parallel r-optparse
