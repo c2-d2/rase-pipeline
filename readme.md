@@ -129,30 +129,31 @@ files.
 help`.
 
 
-## Structure of the files and directories
+## Files and directories
 
-* `benchmarks` - Snakemake benchmarks. As soon as any step of the pipeline gets
-  finished, a log file with information about timing and memory consumption
-  will appear here.
-* `database` - Source database files. Each database should consist of two
-  files: `<db>.tar.gz` and `<db>.tsv`.
-* `logs` - logs from job submission systems
-* `plots` - Plotted figures.
-   - `<experiment>__<db>.timeline.pdf` - prediction as a function of time
-   - `<experiment>__<db>.snapshot.<time>.pdf` - rank plot for selected times (1
+* `benchmarks/` - Snakemake benchmarks. As soon as any step of the pipeline
+  gets finished, a log file with information about timing and memory
+  consumption will appear here.
+* `database/` - Source database files.
+   - Each database consists of two files: `<db>.tar.gz` and `<db>.tsv`.
+* `logs/` - Logs from job submission systems.
+* `plots/` - Plotted figures.
+   - `<experiment>__<db>.timeline.pdf` - Prediction as a function of time.
+   - `<experiment>__<db>.snapshot.<time>.pdf` - Rank plot for selected times (1
 	 minute, 5 minutes, last minute)
-* `prediction` - prediction files
-   - `<experiment>__<db>.fq` - nanopore reads after renaming and sorting by
-	 timestamp
-   - `<experiment>__<db>.bam` - reads mapped onto the phylogenetic tree using
-	 ProPhyle
-   - `<experiment>__<db>/<timestamp>.tsv` - weights calculated for all isolates
-	 at that time; `h1` corresponds to the weights used in the paper
-   - `<experiment>__<db>.predict.tsv` - prediction timeline (each row
-	 corresponds to one minute)
-* `reads` - nanopore reads (`<experiment>.fq`)
-* `scripts` - RASE scripts
-* `tests` - testing data for scripts
+* `prediction/` - Prediction files.
+   - `<experiment>__<db>.fq` - Nanopore reads after renaming and sorting by
+	 timestamp.
+   - `<experiment>__<db>.bam` - Reads mapped onto the phylogenetic tree using
+	 ProPhyle.
+   - `<experiment>__<db>/<timestamp>.tsv` - Cumulative weights calculated for
+	 all isolates from the DB at the time; `h1` corresponds to the weights used
+	 in the paper.
+   - `<experiment>__<db>.predict.tsv` - Prediction timeline (each row
+	 corresponds to one minute).
+* `reads` - Nanopore reads (`<experiment>.fq`).
+* `scripts` - RASE scripts.
+* `tests` - Testing data for scripts.
 
 
 ## FAQs
