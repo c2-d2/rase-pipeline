@@ -27,7 +27,7 @@ rank plots for selected moments, are visualized using R.
 
 ## Quick example
 
-```
+```bash
 # add Bioconda channels and install the RASE dependencies
 conda config --add channels defaults
 conda config --add channels conda-forge
@@ -38,10 +38,13 @@ conda install -y prophyle ete3 pysam snakemake samtools parallel r-optparse
 git clone https://github.com/c2-d2/rase-pipeline
 
 # download the default database
-(cd rase-pipeline/database && wget https://github.com/c2-d2/rase-db/releases/download/v01/spneumoniae_sparc.k18.tar.gz && wget https://github.com/c2-d2/rase-db/releases/download/v01/spneumoniae_sparc.k18.tsv)
+(cd rase-pipeline/database \
+	&& wget https://github.com/c2-d2/rase-db/releases/download/v01/spneumoniae_sparc.k18.tar.gz \
+	&& wget https://github.com/c2-d2/rase-db/releases/download/v01/spneumoniae_sparc.k18.tsv)
 
 # download minion reads from a metagenomic experiment
-(cd rase-pipeline/reads && wget https://zenodo.org/record/1405173/files/sp10_norwich_P33.filtered.fq)
+(cd rase-pipeline/reads \
+	&& wget https://zenodo.org/record/1405173/files/sp10_norwich_P33.filtered.fq)
 
 # run the pipeline
 make -C rase-pipeline
@@ -54,14 +57,14 @@ make -C rase-pipeline
 preferred way of installation. We recommend to create a separate software
 environment (here called `rase`):
 
-```
+```bash
 conda create -n rase \
 	prophyle ete3 pysam snakemake samtools parallel r-optparse
 ```
 
 The environment can then be activated by
 
-```
+```bash
 source activate rase
 ```
 
@@ -69,7 +72,7 @@ Alternatively, the packages can also be installed directly into the default
 Conda environment. Nevertheless, this is not always reliable as there might be
 collisions with packages that were installed previously.
 
-```
+```bash
 conda install prophyle ete3 pysam snakemake samtools parallel r-optparse
 ```
 
@@ -82,7 +85,7 @@ Optparse package manually.
 **Cloning the RASE pipeline.**
 You can clone this repository using git
 
-```
+```bash
 git clone https://github.com/c2-d2/rase-pipeline
 ```
 
@@ -113,7 +116,7 @@ https://zenodo.org/record/1405173.
 **Running prediction locally.** The RASE pipeline can be executed by the Make
 command (all steps, i.e., preprocessing, predicting, and plotting):
 
-```
+```bash
 make
 ```
 
@@ -122,7 +125,7 @@ debugging purposes, it might be sometimes useful to run RASE on a small
 example. The following command will detect the smallest provided database and
 experiment, and will run RASE only for this single combination:
 
-```
+```bash
 make test
 ```
 
