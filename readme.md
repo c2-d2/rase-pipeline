@@ -25,7 +25,7 @@ as a function of time.  Finally, the obtained time characteristics, as well as
 rank plots for selected moments, are visualized using R.
 
 
-## Installation of RASE
+## Installing of RASE
 
 **Installing dependencies.** [Bioconda](https://bioconda.github.io/) is the
 preferred way of installation of the software dependencies. We recommend to
@@ -154,7 +154,7 @@ help`.
 * `tests` - testing data for scripts
 
 
-## Publication
+## Citing RASE
 
 Karel Brinda, Alanna Callendrello, Lauren Cowley, Themoula Charalampous, Robyn
 S Lee, Derek R MacFadden, Gregory Kucherov, Justin O'Grady, Michael Baym,
