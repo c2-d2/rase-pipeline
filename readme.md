@@ -86,7 +86,14 @@ command (all steps, i.e., preprocessing, predicting, and plotting):
 make
 ```
 
-This will run the entire RASE pipeline, including plotting.
+This will run the entire RASE pipeline, including plotting. For the testing and
+debugging purposes, it might be sometimes useful to run RASE on a small
+example. The following command will detect the smallest provided database and
+experiment, and will run RASE only for this single combination:
+
+```
+make test
+```
 
 **Running prediction on a cluster.** When multiple experiments and multiple
 databases are combined, it can be useful to parallelize the computation. In the
