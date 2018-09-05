@@ -11,10 +11,11 @@ sequencing.
 
 ## Overview of the pipeline
 
-The main workflow is specified in `Snakefile`.  The pipeline starts by
-detecting the provided RASE databases (in `database`) and MinION reads (in
-`reads`). Both of these are then pre-processed: reads are sorted by time and the
-database is uncompressed (i.e., the internal k-mer index reconstructed).
+The main [Snakemake](https://snakemake.readthedocs.io/) workflow is specified
+in a single [Snakefile](Snakefile).  The pipeline starts by detecting the
+provided RASE databases (in `database`) and MinION reads (in `reads`). Both of
+these are then pre-processed: reads are sorted by time and the database is
+uncompressed (i.e., the internal k-mer index reconstructed).
 
 The reads are then compared to the database using
 [ProPhyle](http://prophyle.github.io) and isolate, phylogroup, and resistance
@@ -100,7 +101,9 @@ databases are combined, it can be useful to parallelize the computation. In the
 default setting, RASE supports the [Harvard O2
 cluster](https://rc.hms.harvard.edu/#cluster) (Slurm-based), but the
 [configuration file](cluster.json) can be easily adjusted. Submitting to a
-cluster using Snakemake can be done by `make cluster`.
+cluster using
+[Snakemake](https://snakemake.readthedocs.io/en/stable/executable.html#cluster-execution)
+can be done by `make cluster`.
 
 **Exporting outputs.** Outputs of the pipeline can be exported to a single
 `.tar` archive by `make export`.
