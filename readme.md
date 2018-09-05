@@ -25,11 +25,34 @@ as a function of time.  Finally, the obtained time characteristics, as well as
 rank plots for selected moments, are visualized using R.
 
 
+## Quick example
+
+```
+# add Bioconda channels and install the RASE dependencies
+conda config --add channels defaults
+conda config --add channels conda-forge
+conda config --add channels bioconda
+conda install -y prophyle ete3 pysam snakemake samtools parallel r-optparse
+
+# clone this repository
+git clone https://github.com/c2-d2/rase-pipeline
+
+# download the default database
+(cd rase-pipeline/database && wget https://github.com/c2-d2/rase-db/releases/download/v01/spneumoniae_sparc.k18.tar.gz && wget https://github.com/c2-d2/rase-db/releases/download/v01/spneumoniae_sparc.k18.tsv)
+
+# download minion reads from a metagenomic experiment
+(cd rase-pipeline/reads && wget https://zenodo.org/record/1405173/files/sp10_norwich_P33.filtered.fq)
+
+# run the pipeline
+make -C rase-pipeline
+```
+
+
 ## Installing of RASE
 
 **Installing dependencies.** [Bioconda](https://bioconda.github.io/) is the
-preferred way of their installation. We recommend to
-create a separate software environment (here called `rase`):
+preferred way of installation. We recommend to create a separate software
+environment (here called `rase`):
 
 ```
 conda create -n rase \
