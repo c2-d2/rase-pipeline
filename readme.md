@@ -190,14 +190,17 @@ help`.
 
 ## FAQs
 
-> Do I need a cluster to run RASE?
+> Can I run RASE on a laptop?
 
-No, RASE is designed primarily for laptops; the memory requirements are low
+Yes, RASE is designed primarily for laptops; the memory requirements are low
 (hundreds of MB) and the slowest step, read assignment, usually takes between
-several minutes up to 2 hours, in dependence on the sequencing throughput.
-Nevertheless, a cluster might be useful when there are many sequencing
-experiments to be processed at the same time, or a battery of databases to be
-evaluated. In most of situations, we run everything on MacBooks.
+several minutes up to 2 hours, in dependence on the amount of sequencing data.
+
+> Why do you then support submitting jobs to a cluster?
+
+A cluster might be useful when many sequencing
+experiments are to be processed at the same time, or a battery of databases needs to be
+evaluated. In most of situations, we a laptop is sufficient.
 
 
 ## Related repositories
