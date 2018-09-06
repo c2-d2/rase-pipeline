@@ -37,7 +37,7 @@ conda config --add channels defaults
 conda config --add channels conda-forge
 conda config --add channels bioconda
 conda env list | grep ^rase \
-	|| conda install -y -n rase prophyle ete3 pysam snakemake samtools parallel r-optparse
+	|| conda create -y -n rase prophyle ete3 pysam snakemake samtools parallel r-optparse
 source activate rase
 
 # clone this repository
