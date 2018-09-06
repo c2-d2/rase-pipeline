@@ -217,6 +217,11 @@ bioRxiv, 2018.
 doi:[10.1101/403204](https://doi.org/10.1101/403204)
 
 
+## License
+
+[MIT](LICENSE).
+
+
 ## Contact
 
 [Karel Brinda](https://scholar.harvard.edu/brinda) \<kbrinda@hsph.harvard.edu\>
