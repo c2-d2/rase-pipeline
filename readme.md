@@ -200,6 +200,13 @@ experiments to be processed at the same time, or a battery of databases to be
 evaluated. In most of situations, we run everything on MacBooks.
 
 
+## Related repositories
+
+* [RASE DB](http://github.com/c2-d2/rase-db). Code for constructing RASE databases and the released databases.
+* [RASE supplementary](http://github.com/c2-d2/rase-supplementary). Supplementary Materials for the RASE paper, including figures and tables.
+* [ProPhyle](http://prophyle.github.io). A highly accurate and resource-frugal DNA sequence classifier used by RASE.
+* [Prophex](http://github.com/prophyle/prophex). A k-mer index based on the Burrows-Wheeler Transform, used by ProPhyle.
+
 ## Citing RASE
 
 Karel Brinda, Alanna Callendrello, Lauren Cowley, Themoula Charalampous, Robyn
