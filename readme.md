@@ -59,34 +59,8 @@ make -C rase-pipeline
 
 ## Installing of RASE
 
-**Installing dependencies.** [Bioconda](https://bioconda.github.io/) is the
-preferred way of installation. We recommend to create a separate software
-environment (here called `rase`):
-
-```bash
-conda create -n rase \
-	prophyle ete3 pysam snakemake samtools parallel r-optparse
-```
-
-The environment can then be activated by
-
-```bash
-source activate rase
-```
-
-Alternatively, the packages can also be installed directly into the default
-Conda environment. Nevertheless, this is not always reliable as there might be
-collisions with packages that were installed previously.
-
-```bash
-conda install prophyle ete3 pysam snakemake samtools parallel r-optparse
-```
-
-Please note that, at some systems (especially in the HPC setting), the R
-package distributed by Conda might not be properly built. The solution is then
-to create the `rase` environment without `r-optparse`, and to install R and the
-Optparse package manually.
-
+**Installing dependencies.** See [RASE computational
+enviroment](https://github.com/c2-d2/rase/blob/master/environment.md).
 
 **Cloning the RASE pipeline.**
 You can clone this repository using git
