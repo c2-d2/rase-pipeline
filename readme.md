@@ -31,15 +31,12 @@ The following example demonstrates the power of the streptococcal RASE with meta
 The entire computation takes only 6m on a standard laptop (MacBook Pro). Note
 that this is the experiment from Figure 3 (with human reads removed in-silico).
 
-```bash
-# add Bioconda channels, and create and activate an environment for RASE
-conda config --add channels defaults
-conda config --add channels conda-forge
-conda config --add channels bioconda
-conda env list | grep ^rase \
-	|| conda create -y -n rase prophyle ete3 pysam snakemake samtools parallel r-optparse
-source activate rase
+To run the example, [install all
+dependencies](https://github.com/c2-d2/rase/blob/master/environment.md) and run
+the following code:
 
+
+```bash
 # clone this repository
 git clone https://github.com/c2-d2/rase-predict
 
