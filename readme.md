@@ -41,19 +41,19 @@ conda env list | grep ^rase \
 source activate rase
 
 # clone this repository
-git clone https://github.com/c2-d2/rase-pipeline
+git clone https://github.com/c2-d2/rase-predict
 
 # download the default database
-(cd rase-pipeline/database \
+(cd rase-predict/database \
 	&& wget https://github.com/c2-d2/rase-db/releases/download/v01/spneumoniae_sparc.k18.tar.gz \
 	&& wget https://github.com/c2-d2/rase-db/releases/download/v01/spneumoniae_sparc.k18.tsv)
 
 # download minion reads from a metagenomic experiment
-(cd rase-pipeline/reads \
+(cd rase-predict/reads \
 	&& wget https://zenodo.org/record/1405173/files/sp10_norwich_P33.filtered.fq)
 
 # run the pipeline
-make -C rase-pipeline
+make -C rase-predict
 ```
 
 
@@ -62,15 +62,15 @@ make -C rase-pipeline
 **Installing dependencies.** See [RASE computational
 enviroment](https://github.com/c2-d2/rase/blob/master/environment.md).
 
-**Cloning the RASE pipeline.**
+**Cloning the RASE prediction pipeline.**
 You can clone this repository using git
 
 ```bash
-git clone https://github.com/c2-d2/rase-pipeline
+git clone https://github.com/c2-d2/rase-predict
 ```
 
 or download it as a [single .tar.gz
-file](https://github.com/c2-d2/rase-pipeline/archive/master.tar.gz).
+file](https://github.com/c2-d2/rase-predict/archive/master.tar.gz).
 
 **Installing a RASE database.** A RASE database should be placed into the
 directory `database`.  Every database consists of two files: a compressed
