@@ -99,7 +99,7 @@ else:
 # 3) Check dependencies
 #
 
-snakemake.shell("(../scripts/rase_test_environments.sh 2>&1) >/dev/null || ../scripts/rase_test_environments.sh")
+snakemake.shell("(rase/scripts/rase_test_environments.sh 2>&1) >/dev/null || rase/scripts/rase_test_environments.sh")
 
 rule all:
     input:
@@ -148,10 +148,10 @@ for suffix in [f"{x}{y}" for x in ("fa", "fq", "fasta", "fastq") for y in ("", "
             "benchmarks/{pref}.readprep.log"
         shell:
             """
-                minion=1 && ../src/rase/rase_has_datetime.py "{input.reads}" || minion=0; \
+                minion=1 && rase/src/rase/rase_has_datetime.py "{input.reads}" || minion=0; \
                 echo "Has datetimes: $minion";
                 if [ "$minion" -eq "1" ]; then
-                    ../src/rase/rase_minion_rename_reads.py "{input.reads}" \
+                    rase/src/rase/rase_minion_rename_reads.py "{input.reads}" \
                         | paste -d '\t' - - \
                         | sort \
                         | uniq \
@@ -210,9 +210,9 @@ rule predict:
         "benchmarks/{pref}__{index}.predict.log"
     shell:
         """
-            mode=read && ../src/rase/rase_has_datetime.py "{params.reads}" || mode=mimic-ont
+            mode=read && rase/src/rase/rase_has_datetime.py "{params.reads}" || mode=mimic-ont
             mkdir -p "prediction/{wildcards.pref}__{wildcards.index}"
-            ../src/rase/rase_predict.py \
+            rase/src/rase/rase_predict.py \
                 -t $mode \
                 -s {config[prediction_sampling]} \
                 -p "{params.snapshot_dir}" \
@@ -222,7 +222,7 @@ rule predict:
                 --ssc-thres-rhiconf {config[ssc_thres_Rhiconf]} \
                 "{params.tree}" "{params.metadata}" "{params.bam}" \
                 > "{params.tsv1}"
-            ../src/rase/rase_prediction_add_flags.py  "{params.tsv1}" \
+            rase/src/rase/rase_prediction_add_flags.py  "{params.tsv1}" \
                 > "{params.tsv2}"
             rm "{params.tsv1}"
             touch "{output.t}"
@@ -260,7 +260,7 @@ rule plot_timeline:
         pref="{pref}"
     shell:
         """
-            ../scripts/rase_plot_timeline.R \
+            rase/scripts/rase_plot_timeline.R \
                 --pgs-thres-pass={config[pgs_thres_pass]} \
                 --ssc-thres-shiconf={config[ssc_thres_Shiconf]} \
                 --ssc-thres-sr={config[ssc_thres_SR]} \
@@ -288,7 +288,7 @@ rule plot_snapshots:
         plots_pref="plots/{pref}__{index}.snapshots.",
     shell:
         """
-            ../src/rase/rase_plot_selected_snapshots.py "{params.index_tsv}" "{params.pred_dir}" 1 5 -1 "{params.plots_pref}"
+            rase/src/rase/rase_plot_selected_snapshots.py "{params.index_tsv}" "{params.pred_dir}" 1 5 -1 "{params.plots_pref}"
             touch "{output.t}"
         """
 
