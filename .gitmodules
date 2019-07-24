@@ -1,0 +1,3 @@
+[submodule "rase"]
+	path = rase
+	url = http://github.com/c2-d2/rase
