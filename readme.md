@@ -5,27 +5,7 @@
 
 This repository contains the RASE prediction pipeline. The workflow is
 specified within a single [Snakemake](https://snakemake.readthedocs.io)
-[Snakefile](Snakefile) can be executed using GNU Make (see `make help` for all
-implemented commands).
-
-Upon execution, the pipeline analysis data in the following steps:
-
-*1) Detection.* The pipeline detects user-provided RASE database(s) (in
-`database/`) and read sets (in `reads/`), and generates all
-`<db>`-`<reads>` experiments.
-
-*2) Data preparation.* The pipeline decompressed the found databases and sorts
-reads by time of sequencing. When the time information is not available in the
-original reads, it is estimated it based on the number of processed basepairs
-(assuming constant flow (kbps per sec)).
-
-*3) Matching.* Reads are matched against the databases using
-[ProPhyle](https://prophyle.github.io/) and the computed nearest neighbors for
-each read stored in `matching/` in the RASE-BAM format.
-
-*4) Prediction.* Phenotypes are predicted from the computed nearest neighbors.
-
-*5) Plotting.* The computed time characteristics of prediction are plotted.
+[Snakefile](Snakefile) can be executed using GNU Make (see below).
 
 
 ## Quick example
@@ -91,6 +71,39 @@ make
 
 ## Running RASE
 
+Upon execution using `make` the pipeline analyzes data in the following steps:
+
+*1) Detection.* The pipeline detects user-provided RASE database(s) (in
+`database/`) and read sets (in `reads/`), and generates all
+`<db>`-`<reads>` experiments.
+
+*2) Data preparation.* The pipeline decompressed the found databases and sorts
+reads by time of sequencing. When the time information is not available in the
+original reads, it is estimated it based on the number of processed basepairs
+(assuming constant flow (kbps per sec)).
+
+*3) Matching.* Reads are matched against the databases using
+[ProPhyle](https://prophyle.github.io/) and the computed nearest neighbors for
+each read stored in `matching/` in the RASE-BAM format.
+
+*4) Prediction.* Phenotypes are predicted from the computed nearest neighbors.
+
+*5) Plotting.* The computed time characteristics of prediction are plotted.
+
+
+### Subcommands
+
+* `make`, `make all` - Run everything
+* `make clean` - Clean plots and prediction files
+* `make cleanall` - Clean all output files (including bam files and logs)
+* `make cluster` - Submit jobs to a cluster
+* `make export` - Export all outputs
+* `make replot` - Re-plot all figures
+* `make test` - Run the smallest experiment only
+
+
+## Adjusting configuration
+
 **Running prediction locally.** The RASE pipeline can be executed by the Make
 command (all steps, i.e., preprocessing, predicting, and plotting):
 
@@ -129,35 +142,28 @@ files.
   (including the databases and reads)
 
 
-**Others.** For the list of available subcommands, see the output of `make
-help`.
-
-
 ## Files and directories
 
-* `benchmarks/` - Snakemake benchmarks. As soon as any step of the pipeline
-  gets finished, a log file with information about timing and memory
-  consumption will appear here.
+Input files:
 * `database/` - Source database files.
    - Each database consists of two files: `<db>.tar.gz` and `<db>.tsv`.
-* `logs/` - Logs from job submission systems.
-* `plots/` - Plotted figures.
-   - `<experiment>__<db>.timeline.pdf` - Prediction as a function of time.
-   - `<experiment>__<db>.snapshot.<time>.pdf` - Rank plot for selected times (1
-   minute, 5 minutes, last minute)
+* `reads` - Nanopore reads (`<reads>.fq`).
+
+Output files:
+
+* `matching/`
+   - `<reads>.fa` - Nanopore reads sorted by time.
+   - `<reads>__<db>.bam` - Read matches to the reference strains in RASE/BAM.
 * `prediction/` - Prediction files.
-   - `<experiment>__<db>.fq` - Nanopore reads after renaming and sorting by
-   timestamp.
-   - `<experiment>__<db>.bam` - Reads mapped onto the phylogenetic tree using
-   ProPhyle.
-   - `<experiment>__<db>/<timestamp>.tsv` - Cumulative weights calculated for
+   - `<reads>__<db>/<timestamp>.tsv` - Cumulative weights calculated for
    all isolates from the DB at the time; `h1` corresponds to the weights used
    in the paper.
-   - `<experiment>__<db>.predict.tsv` - Prediction timeline (each row
+   - `<reads>__<db>.predict.tsv` - Prediction timeline (each row
    corresponds to one minute).
-* `reads` - Nanopore reads (`<experiment>.fq`).
-* `scripts` - RASE scripts.
-* `tests` - Testing data for scripts.
+* `plots/` - Plotted figures.
+   - `<reads>__<db>.timeline.pdf` - Prediction as a function of time.
+   - `<reads>__<db>.snapshot.<time>.pdf` - Rank plot for selected times (1
+   minute, 5 minutes, last minute)
 
 
 ## Related repositories
