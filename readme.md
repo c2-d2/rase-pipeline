@@ -161,34 +161,43 @@ help`.
 
 ## FAQs
 
-> Can I run RASE on a laptop?
+> Why am I getting 'libR.dylib Reason: image not found'?
 
-Yes, RASE is designed primarily for laptops; the memory requirements are low
-(hundreds of MB) and the slowest step, read assignment, usually takes between
-several minutes up to 2 hours, in dependence on the amount of sequencing data.
+On some systems, the R package distributed by Bioconda might not be properly
+built and would display messages such as
 
-> Why do you then support submitting jobs to a cluster?
+```
+dyld: Library not loaded: @rpath/libintl.9.dylib
+   Referenced from: /Users/user/miniconda/envs/rase/lib/R/lib/libR.dylib
+   Reason: image not found
+Abort trap: 6
+```
 
-A cluster might be useful when many sequencing
-experiments are to be processed at the same time, or a battery of databases needs to be
-evaluated. In most of situations, we a laptop is sufficient.
+The solution is then to create the `raseenv` environment without `r-optparse`,
+and to install R and the OptParse package manually.
+
+> Why am I getting 'ETE: cannot connect to X server'?
+
+ETE 3 library, which is used for tree plotting, internally depends on QT and
+requires using an X-Server. This becomes problematic especially on virtual
+machines.  For instance, on Ubuntu-based machines this can be solved by
+installing several additional packages:
+
+```
+apt-get install xvfb libqt4-dev libgl1-mesa-dev libglu1-mesa-dev xauth xfonts-base
+```
+
+and then prepending the following string to commands for building the database.
+```
+xvfb-run --server-args="-screen 0 1024x768x24 -noreset" \
+```
 
 
 ## Related repositories
 
-* [RASE DB](http://github.com/c2-d2/rase-db). Code for constructing RASE databases and the released databases.
 * [RASE supplementary](http://github.com/c2-d2/rase-supplement). Supplementary Materials for the RASE paper, including figures and tables.
 * [ProPhyle](http://prophyle.github.io). A highly accurate and resource-frugal DNA sequence classifier used by RASE.
 * [Prophex](http://github.com/prophyle/prophex). A k-mer index based on the Burrows-Wheeler Transform, used by ProPhyle.
-
-## Citing RASE
-
-Karel Brinda, Alanna Callendrello, Lauren Cowley, Themoula Charalampous, Robyn
-S Lee, Derek R MacFadden, Gregory Kucherov, Justin O'Grady, Michael Baym,
-William P Hanage. **Lineage calling can identify antibiotic resistant clones
-within minutes.**
-bioRxiv, 2018.
-doi:[10.1101/403204](https://doi.org/10.1101/403204)
 
 
 ## License
