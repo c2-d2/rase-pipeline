@@ -42,12 +42,12 @@ git clone https://github.com/c2-d2/rase-predict
 
 # download the default database
 (cd rase-predict/database \
-	&& wget https://github.com/c2-d2/rase-db/releases/download/v01/spneumoniae_sparc.k18.tar.gz \
-	&& wget https://github.com/c2-d2/rase-db/releases/download/v01/spneumoniae_sparc.k18.tsv)
+  && wget https://github.com/c2-d2/rase-db/releases/download/v01/spneumoniae_sparc.k18.tar.gz \
+  && wget https://github.com/c2-d2/rase-db/releases/download/v01/spneumoniae_sparc.k18.tsv)
 
 # download minion reads from a metagenomic experiment
 (cd rase-predict/reads \
-	&& wget https://zenodo.org/record/1405173/files/sp10_norwich_P33.filtered.fq)
+  && wget https://zenodo.org/record/1405173/files/sp10_norwich_P33.filtered.fq)
 
 # run the pipeline
 make -C rase-predict
@@ -143,17 +143,17 @@ help`.
 * `plots/` - Plotted figures.
    - `<experiment>__<db>.timeline.pdf` - Prediction as a function of time.
    - `<experiment>__<db>.snapshot.<time>.pdf` - Rank plot for selected times (1
-	 minute, 5 minutes, last minute)
+   minute, 5 minutes, last minute)
 * `prediction/` - Prediction files.
    - `<experiment>__<db>.fq` - Nanopore reads after renaming and sorting by
-	 timestamp.
+   timestamp.
    - `<experiment>__<db>.bam` - Reads mapped onto the phylogenetic tree using
-	 ProPhyle.
+   ProPhyle.
    - `<experiment>__<db>/<timestamp>.tsv` - Cumulative weights calculated for
-	 all isolates from the DB at the time; `h1` corresponds to the weights used
-	 in the paper.
+   all isolates from the DB at the time; `h1` corresponds to the weights used
+   in the paper.
    - `<experiment>__<db>.predict.tsv` - Prediction timeline (each row
-	 corresponds to one minute).
+   corresponds to one minute).
 * `reads` - Nanopore reads (`<experiment>.fq`).
 * `scripts` - RASE scripts.
 * `tests` - Testing data for scripts.
