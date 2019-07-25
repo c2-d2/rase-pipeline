@@ -54,38 +54,38 @@ make -C rase-predict
 ```
 
 
-## Installing of RASE
+## Installation
 
-**Installing dependencies.** See [RASE computational
-enviroment](https://github.com/c2-d2/rase/blob/master/environment.md).
+1) **Installing dependencies.** See [RASE computational
+   enviroment](https://github.com/c2-d2/rase/blob/master/environment.md).
 
-**Cloning the RASE prediction pipeline.**
-You can clone this repository using git
+2) **Cloning the RASE prediction pipeline.**
+    You can clone this repository using git
 
-```bash
-git clone https://github.com/c2-d2/rase-predict
-```
+    ```bash
+    git clone --recursive https://github.com/c2-d2/rase-pipeline
+    ```
 
-or download it as a [single .tar.gz
-file](https://github.com/c2-d2/rase-predict/archive/master.tar.gz).
+  or download it as a [single .tar.gz
+  file](https://github.com/c2-d2/rase-predict/archive/master.tar.gz).
 
-**Installing a RASE database.** A RASE database should be placed into the
-directory `database`.  Every database consists of two files: a compressed
-ProPhyle index (`.tar`) and a table with metadata for individual database
-isolates (`.tsv`). To be properly detected, both of the files should have the
-same base name.
+3) **Installing a RASE database.** A RASE database should be placed into the
+  directory `database`.  Every database consists of two files: a compressed
+  ProPhyle index (`.tar`) and a table with metadata for individual database
+  isolates (`.tsv`). To be properly detected, both of the files should have the
+  same base name.
 
-The default RASE database (Streptococcus pneumoniae, k=18) can be downloaded
-from [RASE DB releases](https://github.com/c2-d2/rase-db/releases). A custom
-database can be constructed using scripts and workflows from the [RASE DB
-repository](https://github.com/c2-d2/rase-db).
+  The default RASE database (Streptococcus pneumoniae, k=18) can be downloaded
+  from [RASE DB releases](https://github.com/c2-d2/rase-db/releases). A custom
+  database can be constructed using scripts and workflows from the [RASE DB
+  repository](https://github.com/c2-d2/rase-db).
 
-**Placing nanopore reads.** Nanopore reads should be placed into the `reads`
-directory as a single `.fq` file per sequencing experiment. Please, check the
-suffix: `.fastq` files are not currently detected. Also, the pipeline assumes
-that the provided reads keep the original naming convention from ONT. Reads
-that were used in the paper can be downloaded from
-https://zenodo.org/record/1405173.
+4) **Placing nanopore reads.** Nanopore reads should be placed into the `reads`
+  directory as a single `.fq` file per sequencing experiment. Please, check the
+  suffix: `.fastq` files are not currently detected. Also, the pipeline assumes
+  that the provided reads keep the original naming convention from ONT. Reads
+  that were used in the paper can be downloaded from
+  https://zenodo.org/record/1405173.
 
 
 ## Running RASE
