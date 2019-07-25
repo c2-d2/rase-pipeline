@@ -32,7 +32,7 @@ replot: ## Replot all figures
 	$(SM)
 
 export: ## Export all outputs
-	f="rase_results.$$d.tar"; \
+	f="rase_results.tar"; \
 	rm -f $$f; \
 	tar cvf $$f --files-from /dev/null; \
 	for x in prediction/*.tsv plots/*.pdf; do \
