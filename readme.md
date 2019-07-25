@@ -3,38 +3,40 @@
 
 ## Introduction
 
-This repository contains the RASE prediction pipeline. The method uses lineage
-calling to identify antibiotic resistant clones from nanopore reads. In our
-[paper](https://www.biorxiv.org/content/early/2018/08/29/403204), we
-demonstrate on the example of pneumococcus that, using this approach,
-antibiotic resistance can be predicted within minutes from the start of
-sequencing. Please, look at the paper for more information.
+This repository contains the RASE prediction pipeline. The workflow is
+specified within a single [Snakemake](https://snakemake.readthedocs.io)
+[Snakefile](Snakefile) can be executed using GNU Make (see `make help` for all
+implemented commands).
 
-The RASE [Snakemake](https://snakemake.readthedocs.io/) workflow is specified
-within a single [Snakefile](Snakefile). When executed, the pipeline first
-detects the provided RASE database(s) (in the `database` directory) and
-nanopore reads (in the `reads` directory), and generates all
-`<db>`-`<experiment>` combinations. In practice, the most common scenario is
-usally "1 db vs. many experiments". After the detection step, reads and
-database are pre-processed: reads are sorted by time of sequencing and the
-database gets uncompressed (i.e., the full internal ProPhyle k-mer index
-restored).  Subsequently, nanopore reads from individual experiments are
-compared to the database(s) using [ProPhyle](http://prophyle.github.io), and
-isolate, phylogroup and resistance to individual antibiotics predicted - all
-as a function of time.  Finally, the obtained time characteristics, as well as
-rank plots for selected moments, are visualized using R.
+Upon execution, the pipeline analysis data in the following steps:
+
+*1) Detection.* The pipeline detects user-provided RASE database(s) (in
+`database/`) and read sets (in `reads/`), and generates all
+`<db>`-`<reads>` experiments.
+
+*2) Data preparation.* The pipeline decompressed the found databases and sorts
+reads by time of sequencing. When the time information is not available in the
+original reads, it is estimated it based on the number of processed basepairs
+(assuming constant flow (kbps per sec)).
+
+*3) Matching.* Reads are matched against the databases using
+[ProPhyle](https://prophyle.github.io/) and the computed nearest neighbors for
+each read stored in `matching/` in the RASE-BAM format.
+
+*4) Prediction.* Phenotypes are predicted from the computed nearest neighbors.
+
+*5) Plotting.* The computed time characteristics of prediction are plotted.
 
 
 ## Quick example
 
-The following example demonstrates the power of the streptococcal RASE with
-metagenomic reads. The entire computation takes only 6m on a standard laptop
-(MacBook Pro). Note that this is the experiment from Figure 3 (with human reads
-removed in-silico).
+The following example predicts antibiotic resistance from a sputum metagenomic
+sample and the pneumococcal database.
 
-To run the example, [install all
-dependencies](https://github.com/c2-d2/rase/blob/master/environment.md) and run
-the following code:
+After [install
+dependencies](https://github.com/c2-d2/rase/blob/master/environment.md), run
+the commands below. The entire computation should require
+approximately 6m on a standard laptop (MacBook Pro).
 
 
 ```bash
@@ -161,8 +163,6 @@ help`.
 ## Related repositories
 
 * [RASE supplementary](http://github.com/c2-d2/rase-supplement). Supplementary Materials for the RASE paper, including figures and tables.
-* [ProPhyle](http://prophyle.github.io). A highly accurate and resource-frugal DNA sequence classifier used by RASE.
-* [Prophex](http://github.com/prophyle/prophex). A k-mer index based on the Burrows-Wheeler Transform, used by ProPhyle.
 
 
 ## License
