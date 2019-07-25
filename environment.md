@@ -1,8 +1,8 @@
 # RASE computational environment
 
 The easiest way how to setup a computational environment for RASE is using
-[Bioconda](https://bioconda.github.io/). This approach has been tested on
-multiple Unix and OS X machines, including clusters and virtual machines.
+[Bioconda](https://bioconda.github.io/).
+
 
 ## Dependencies
 
@@ -19,6 +19,7 @@ multiple Unix and OS X machines, including clusters and virtual machines.
 * [R](https://www.r-project.org/)
 * [R OptParse](https://cran.r-project.org/web/packages/optparse/)
 * [GCC 4.8+](https://gcc.gnu.org/) or equivalent
+* [Seqtk](https://github.com/lh3/seqtk)
 * [zlib](https://zlib.net/)
 
 
@@ -30,7 +31,7 @@ We recommend to create a separate software environment (here called `rase`):
 
 ```bash
 conda create -n raseenv \
-	prophyle ete3 pysam snakemake-minimal samtools parallel r-optparse pandas
+	prophyle ete3 pysam snakemake-minimal samtools parallel r-optparse pandas seqtk
 ```
 
 The environment can then be activated by
@@ -39,16 +40,14 @@ The environment can then be activated by
 source activate raseenv
 ```
 
-### Using the default BioConda environment
+To avoid failures on very long reads, we recommend upgrading ProPhyle to
+a corrected version:
 
-Alternatively, the packages can also be installed directly into the default
-BioConda environment. Nevertheless, this is not always reliable since some of
-the RASE dependencies might collide with packages that were installed
-previously.
-
-```bash
-conda install prophyle ete3 pysam snakemake samtools parallel r-optparse pandas
 ```
+source activate raseenv
+pip install --upgrade git+git://github.com/prophyle/prophyle.git@b55e026
+```
+
 
 ### Alternative ways of installation
 
