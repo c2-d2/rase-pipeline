@@ -39,12 +39,11 @@ the following code:
 
 ```bash
 # clone and enter this repository
-git clone https://github.com/c2-d2/rase-pipeline
+git clone --recursive https://github.com/c2-d2/rase-pipeline
 cd rase-pipeline
 
 # download the default database
-wget -P database
-  https://github.com/c2-d2/rase-db-spneumoniae-sparc/releases/download/v1.3/spneumoniae-sparc.k18.{tsv,tar.gz}
+wget -P database https://github.com/c2-d2/rase-db-spneumoniae-sparc/releases/download/v1.3/spneumoniae-sparc.k18.{tsv,tar.gz}
 
 # download minion reads from a metagenomic experiment
 wget -P reads wget https://zenodo.org/record/1405173/files/sp10_norwich_P33.filtered.fq
