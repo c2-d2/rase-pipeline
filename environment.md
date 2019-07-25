@@ -29,14 +29,14 @@ multiple Unix and OS X machines, including clusters and virtual machines.
 We recommend to create a separate software environment (here called `rase`):
 
 ```bash
-conda create -n rase \
+conda create -n raseenv \
 	prophyle ete3 pysam snakemake-minimal samtools parallel r-optparse pandas
 ```
 
 The environment can then be activated by
 
 ```bash
-source activate rase
+source activate raseenv
 ```
 
 ### Using the default BioConda environment
@@ -47,7 +47,7 @@ the RASE dependencies might collide with packages that were installed
 previously.
 
 ```bash
-conda install prophyle ete3 pysam snakemake samtools parallel r-optparse
+conda install prophyle ete3 pysam snakemake samtools parallel r-optparse pandas
 ```
 
 ### Alternative ways of installation
@@ -83,7 +83,7 @@ dyld: Library not loaded: @rpath/libintl.9.dylib
 Abort trap: 6
 ```
 
-The solution is then to create the `rase` environment without `r-optparse`, and
+The solution is then to create the `raseenv` environment without `r-optparse`, and
 to install R and the OptParse package manually.
 
 ### ETE: cannot connect to X server
