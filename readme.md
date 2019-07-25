@@ -27,9 +27,10 @@ rank plots for selected moments, are visualized using R.
 
 ## Quick example
 
-The following example demonstrates the power of the streptococcal RASE with metagenomic reads.
-The entire computation takes only 6m on a standard laptop (MacBook Pro). Note
-that this is the experiment from Figure 3 (with human reads removed in-silico).
+The following example demonstrates the power of the streptococcal RASE with
+metagenomic reads. The entire computation takes only 6m on a standard laptop
+(MacBook Pro). Note that this is the experiment from Figure 3 (with human reads
+removed in-silico).
 
 To run the example, [install all
 dependencies](https://github.com/c2-d2/rase/blob/master/environment.md) and run
@@ -37,20 +38,19 @@ the following code:
 
 
 ```bash
-# clone this repository
-git clone https://github.com/c2-d2/rase-predict
+# clone and enter this repository
+git clone https://github.com/c2-d2/rase-pipeline
+cd rase-pipeline
 
 # download the default database
-(cd rase-predict/database \
-  && wget https://github.com/c2-d2/rase-db/releases/download/v01/spneumoniae_sparc.k18.tar.gz \
-  && wget https://github.com/c2-d2/rase-db/releases/download/v01/spneumoniae_sparc.k18.tsv)
+wget -P database
+  https://github.com/c2-d2/rase-db-spneumoniae-sparc/releases/download/v1.3/spneumoniae-sparc.k18.{tsv,tar.gz}
 
 # download minion reads from a metagenomic experiment
-(cd rase-predict/reads \
-  && wget https://zenodo.org/record/1405173/files/sp10_norwich_P33.filtered.fq)
+wget -P reads wget https://zenodo.org/record/1405173/files/sp10_norwich_P33.filtered.fq
 
 # run the pipeline
-make -C rase-predict
+make
 ```
 
 
