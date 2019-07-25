@@ -57,7 +57,7 @@ make -C rase-predict
 ## Installation
 
 1) **Installing dependencies.** See [RASE computational
-   enviroment](https://github.com/c2-d2/rase/blob/master/environment.md).
+   enviroment](environment.md).
 
 2) **Cloning the RASE prediction pipeline.**
     You can clone this repository using git
