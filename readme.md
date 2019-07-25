@@ -73,27 +73,27 @@ make
 
 Upon execution using `make` the pipeline analyzes data in the following steps:
 
-*1) Detection.* The pipeline detects user-provided RASE database(s) (in
+1) **Detection.** The pipeline detects user-provided RASE database(s) (in
 `database/`) and read sets (in `reads/`), and generates all
 `<db>`-`<reads>` experiments.
 
-*2) Data preparation.* The pipeline decompressed the found databases and sorts
+2) **Data preparation.** The pipeline decompressed the found databases and sorts
 reads by time of sequencing. When the time information is not available in the
 original reads, it is estimated it based on the number of processed basepairs
 (assuming constant flow (kbps per sec)).
 
-*3) Matching.* Reads are matched against the databases using
+3) **Matching.** Reads are matched against the databases using
 [ProPhyle](https://prophyle.github.io/) and the computed nearest neighbors for
 each read stored in `matching/` in the RASE-BAM format.
 
-*4) Prediction.* Phenotypes are predicted from the computed nearest neighbors.
+4) **Prediction.** Phenotypes are predicted from the computed nearest neighbors.
 
-*5) Plotting.* The computed time characteristics of prediction are plotted.
+5) **Plotting.** The computed time characteristics of prediction are plotted.
 
 
 ### Subcommands
 
-* `make`, `make all` - Run everything.
+* `make` - Run everything.
 * `make cluster` - Submit jobs to a cluster.
 * `make export` - Export all outputs to `rase_results.tar`.
 * `make clean` - Clean plots and prediction files.
