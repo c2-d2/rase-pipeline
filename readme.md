@@ -93,53 +93,13 @@ each read stored in `matching/` in the RASE-BAM format.
 
 ### Subcommands
 
-* `make`, `make all` - Run everything
-* `make clean` - Clean plots and prediction files
-* `make cleanall` - Clean all output files (including bam files and logs)
-* `make cluster` - Submit jobs to a cluster
-* `make export` - Export all outputs
-* `make replot` - Re-plot all figures
-* `make test` - Run the smallest experiment only
-
-
-## Adjusting configuration
-
-**Running prediction locally.** The RASE pipeline can be executed by the Make
-command (all steps, i.e., preprocessing, predicting, and plotting):
-
-```bash
-make
-```
-
-This will run the entire RASE pipeline, including plotting. For the testing and
-debugging purposes, it might be sometimes useful to run RASE on a small
-example. The following command will detect the smallest provided database and
-experiment, and will run RASE only for this single combination:
-
-```bash
-make test
-```
-
-**Running prediction on a cluster.** When multiple experiments and multiple
-databases are combined, it can be useful to parallelize the computation. In the
-default setting, RASE supports the [Harvard O2
-cluster](https://rc.hms.harvard.edu/#cluster) (Slurm-based), but the
-[configuration file](cluster.json) can be easily adjusted. Submitting to a
-cluster using
-[Snakemake](https://snakemake.readthedocs.io/en/stable/executable.html#cluster-execution)
-can be done by `make cluster`.
-
-**Exporting outputs.** Outputs of the pipeline can be exported to a single
-`.tar` archive by `make export`.
-
-**Cleaning.** In some situations, it might be useful to clean intermediate
-files.
-
-* `make clean` - cleans all prediction outputs and plots, but keeps ProPhyle
-  outputs (the most time consuming step)
-* `make cleanall` - removes previous and also ProPhyle outputs
-* `git clean -fxd` - removes all files that are not part of the git repository
-  (including the databases and reads)
+* `make`, `make all` - Run everything.
+* `make cluster` - Submit jobs to a cluster.
+* `make export` - Export all outputs to `rase_results.tar`.
+* `make clean` - Clean plots and prediction files.
+* `make cleanall` - Clean all output files (including bam files and logs).
+* `make replot` - Re-plot all figures.
+* `make test` - Run the smallest experiment only. If database or reads are not present, download examples. For testing and debugging purposes.
 
 
 ## Files and directories
