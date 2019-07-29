@@ -24,7 +24,7 @@ approximately 6m on a standard laptop (MacBook Pro).
 git clone --recursive https://github.com/c2-d2/rase-pipeline
 cd rase-pipeline
 
-# download the default database
+# download the S. pneumoniae database
 wget -P database https://github.com/c2-d2/rase-db-spneumoniae-sparc/releases/download/v1.3/spneumoniae-sparc.k18.{tsv,tar.gz}
 
 # download minion reads from a metagenomic experiment
@@ -62,11 +62,8 @@ make
   repository](https://github.com/c2-d2/rase-db).
 
 4) **Placing nanopore reads.** Nanopore reads should be placed into the `reads`
-  directory as a single `.fq` file per sequencing experiment. Please, check the
-  suffix: `.fastq` files are not currently detected. Also, the pipeline assumes
-  that the provided reads keep the original naming convention from ONT. Reads
-  that were used in the paper can be downloaded from
-  https://zenodo.org/record/1405173.
+  directory as a single `.fq`/`.fastq`/`.fa`/`.fasta` file (possibly gzipped) per sequencing experiment.
+
 
 
 ## Running RASE
@@ -77,10 +74,10 @@ Upon execution using `make` the pipeline analyzes data in the following steps:
 `database/`) and read sets (in `reads/`), and generates all
 `<db>`-`<reads>` experiments.
 
-2) **Data preparation.** The pipeline decompressed the found databases and sorts
-reads by time of sequencing. When the time information is not available in the
-original reads, it is estimated it based on the number of processed basepairs
-(assuming constant flow (kbps per sec)).
+2) **Data preparation.** The pipeline decompressed the found databases and
+sorts reads by time of sequencing. When the time information is not available
+in the original reads (in read headers), it is estimated it based on the number
+of processed basepairs (assuming constant flow (kbps per sec)).
 
 3) **Matching.** Reads are matched against the databases using
 [ProPhyle](https://prophyle.github.io/) and the computed nearest neighbors for
@@ -128,6 +125,8 @@ Output files:
 
 ## Related repositories
 
+* [*S. pneumoniae* RASE DB](https://github.com/c2-d2/rase-db-spneumoniae-sparc/).
+* [*N. gonorrhoeae* RASE DB](http://github.com/c2-d2/rase-db-ngonorrhoeae-gisp).
 * [RASE supplementary](http://github.com/c2-d2/rase-supplement). Supplementary Materials for the RASE paper, including figures and tables.
 
 
