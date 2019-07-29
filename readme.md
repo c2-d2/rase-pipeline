@@ -50,19 +50,14 @@ make
   or download it as a [single .tar.gz
   file](https://github.com/c2-d2/rase-predict/archive/master.tar.gz).
 
-3) **Installing a RASE database.** A RASE database should be placed into the
-  directory `database`.  Every database consists of two files: a compressed
-  ProPhyle index (`.tar`) and a table with metadata for individual database
-  isolates (`.tsv`). To be properly detected, both of the files should have the
+3) **Installing a RASE database.** A RASE database should be placed into
+  `database/`.  Every database consists of two files: a compressed
+  *k*-mer index (`.tar`) and a table with metadata for individual database
+  strains (`.tsv`). To be properly detected, both of the files should have the
   same base name.
 
-  The default RASE database (Streptococcus pneumoniae, k=18) can be downloaded
-  from [RASE DB releases](https://github.com/c2-d2/rase-db/releases). A custom
-  database can be constructed using scripts and workflows from the [RASE DB
-  repository](https://github.com/c2-d2/rase-db).
-
-4) **Placing nanopore reads.** Nanopore reads should be placed into the `reads`
-  directory as a single `.fq`/`.fastq`/`.fa`/`.fasta` file (possibly gzipped) per sequencing experiment.
+4) **Placing nanopore reads.** Nanopore reads should be placed into `reads/`
+  as a single `.fq`/`.fastq`/`.fa`/`.fasta` file (possibly gzipped) per sequencing experiment.
 
 
 
@@ -104,7 +99,7 @@ each read stored in `matching/` in the RASE-BAM format.
 Input files:
 * `database/` - Source database files.
    - Each database consists of two files: `<db>.tar.gz` and `<db>.tsv`.
-* `reads` - Nanopore reads (`<reads>.fq`).
+* `reads/` - Nanopore reads (`<reads>.{fq,fastq,fa,fasta}{.gz,}`).
 
 Output files:
 
@@ -113,8 +108,7 @@ Output files:
    - `<reads>__<db>.bam` - Read matches to the reference strains in RASE/BAM.
 * `prediction/` - Prediction files.
    - `<reads>__<db>/<timestamp>.tsv` - Cumulative weights calculated for
-   all isolates from the DB at the time; `h1` corresponds to the weights used
-   in the paper.
+   all strains from the database at the time; `h1` corresponds to the weights used in the paper.
    - `<reads>__<db>.predict.tsv` - Prediction timeline (each row
    corresponds to one minute).
 * `plots/` - Plotted figures.
