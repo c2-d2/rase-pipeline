@@ -3,9 +3,16 @@
 
 ## Introduction
 
-This repository contains the RASE prediction pipeline. The workflow is
-specified within a single [Snakemake](https://snakemake.readthedocs.io)
-[Snakefile](Snakefile) can be executed using GNU Make (see below).
+
+This repository contains the RASE prediction pipeline, which implements genomic
+neighbor typing for rapid inference of antibiotic resistance and
+susceptibility. For more information, see the associated
+[paper](https://www.biorxiv.org/content/10.1101/403204v2) and [supplementary
+repository](https://github.com/c2-d2/rase-supplement).
+
+The entire pipeline is specified within a single
+[Snakemake](https://snakemake.readthedocs.io) [Snakefile](Snakefile), which can
+be executed using GNU Make (see below).
 
 
 ## Quick example
