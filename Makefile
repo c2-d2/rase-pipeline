@@ -4,7 +4,7 @@
 # License: MIT
 #
 
-.PHONY: all help clean cleanall cluster export
+.PHONY: all help clean cleanall cluster export updatetest
 
 SHELL=/usr/bin/env bash -eo pipefail
 
@@ -63,4 +63,7 @@ cleanall: clean
 	rm -f prediction/.*.complete
 	rm -f benchmarks/*.classify.log
 	rm -fr database/.*.complete $$(ls -d database/*/ 2>/dev/null || true) benchmarks/decompress.log
+
+updatetest:
+	cp prediction/sp10_norwich_P33.filtered__spneumoniae-sparc.k18.predict.tsv rase/tests/predict.tsv
 
