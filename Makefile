@@ -4,7 +4,7 @@
 # License: MIT
 #
 
-.PHONY: all help clean cleanall cluster export
+.PHONY: all help clean cleanall cluster export updatetest
 
 SHELL=/usr/bin/env bash -eo pipefail
 
@@ -21,7 +21,7 @@ test: ## Run the smallest experiment only
 	ls database/*.tsv || \
 		wget -P database https://github.com/c2-d2/rase-db-spneumoniae-sparc/releases/download/v1.3/spneumoniae-sparc.k18.{tsv,tar.gz}
 	ls reads/*.fq || \
-		wget -P reads wget https://zenodo.org/record/1405173/files/sp10_norwich_P33.filtered.fq
+		wget -P reads https://zenodo.org/record/1405173/files/sp10_norwich_P33.filtered.fq
 	$(SM) test
 
 replot: ## Replot all figures
@@ -63,4 +63,9 @@ cleanall: clean
 	rm -f prediction/.*.complete
 	rm -f benchmarks/*.classify.log
 	rm -fr database/.*.complete $$(ls -d database/*/ 2>/dev/null || true) benchmarks/decompress.log
+
+updatetest:
+	cat prediction/sp10_norwich_P33.filtered__spneumoniae-sparc.k18.predict.tsv > rase/tests/predict.tsv
+	cat $$(ls prediction/sp10_norwich_P33.filtered__spneumoniae-sparc.k18/*.tsv | tail -n1) > rase/tests/snapshot.tsv
+	cat $$(ls database/*.tsv | tail -n1) | perl -pe 's/pg/lineage/g' > rase/tests/metadata.tsv
 

@@ -216,10 +216,10 @@ rule predict:
                 -t $mode \
                 -s {config[prediction_sampling]} \
                 -p "{params.snapshot_dir}" \
-                --pgs-thres-pass {config[pgs_thres_pass]} \
-                --ssc-thres-shiconf {config[ssc_thres_Shiconf]} \
-                --ssc-thres-sr {config[ssc_thres_SR]} \
-                --ssc-thres-rhiconf {config[ssc_thres_Rhiconf]} \
+                --ls-thres-pass {config[ls_thres_pass]} \
+                --ss-thres-shiconf {config[ss_thres_Shiconf]} \
+                --ss-thres-sr {config[ss_thres_SR]} \
+                --ss-thres-rhiconf {config[ss_thres_Rhiconf]} \
                 "{params.tree}" "{params.metadata}" "{params.bam}" \
                 > "{params.tsv1}"
             rase/src/rase/rase_prediction_add_flags.py  "{params.tsv1}" \
@@ -261,10 +261,10 @@ rule plot_timeline:
     shell:
         """
             rase/scripts/rase_plot_timeline.R \
-                --pgs-thres-pass={config[pgs_thres_pass]} \
-                --ssc-thres-shiconf={config[ssc_thres_Shiconf]} \
-                --ssc-thres-sr={config[ssc_thres_SR]} \
-                --ssc-thres-rhiconf={config[ssc_thres_Rhiconf]} \
+                --ls-thres-pass={config[ls_thres_pass]} \
+                --ss-thres-shiconf={config[ss_thres_Shiconf]} \
+                --ss-thres-sr={config[ss_thres_SR]} \
+                --ss-thres-rhiconf={config[ss_thres_Rhiconf]} \
                 "{params.tsv}" "{params.pdf}"
             touch "{output.t}"
         """
