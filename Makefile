@@ -21,7 +21,7 @@ test: ## Run the smallest experiment only
 	ls database/*.tsv || \
 		wget -P database https://github.com/c2-d2/rase-db-spneumoniae-sparc/releases/download/v1.3/spneumoniae-sparc.k18.{tsv,tar.gz}
 	ls reads/*.fq || \
-		wget -P reads wget https://zenodo.org/record/1405173/files/sp10_norwich_P33.filtered.fq
+		wget -P reads https://zenodo.org/record/1405173/files/sp10_norwich_P33.filtered.fq
 	$(SM) test
 
 replot: ## Replot all figures
