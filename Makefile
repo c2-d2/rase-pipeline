@@ -65,7 +65,7 @@ cleanall: clean
 	rm -fr database/.*.complete $$(ls -d database/*/ 2>/dev/null || true) benchmarks/decompress.log
 
 updatetest:
-	cp prediction/sp10_norwich_P33.filtered__spneumoniae-sparc.k18.predict.tsv rase/tests/predict.tsv
-	cp $$(ls prediction/sp10_norwich_P33.filtered__spneumoniae-sparc.k18/*.tsv | tail -n1) rase/tests/snapshot.tsv
-	cp $$(ls database/*.tsv | tail -n1) rase/tests/metadata.tsv
+	cat prediction/sp10_norwich_P33.filtered__spneumoniae-sparc.k18.predict.tsv > rase/tests/predict.tsv
+	cat $$(ls prediction/sp10_norwich_P33.filtered__spneumoniae-sparc.k18/*.tsv | tail -n1) > rase/tests/snapshot.tsv
+	cat $$(ls database/*.tsv | tail -n1) | perl -pe 's/pg/lineage/g' > rase/tests/metadata.tsv
 
