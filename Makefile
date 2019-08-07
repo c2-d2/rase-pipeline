@@ -66,4 +66,6 @@ cleanall: clean
 
 updatetest:
 	cp prediction/sp10_norwich_P33.filtered__spneumoniae-sparc.k18.predict.tsv rase/tests/predict.tsv
+	cp $$(ls prediction/sp10_norwich_P33.filtered__spneumoniae-sparc.k18/*.tsv | tail -n1) rase/tests/snapshot.tsv
+	cp $$(ls database/*.tsv | tail -n1) rase/tests/metadata.tsv
 
