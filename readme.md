@@ -4,9 +4,9 @@
 ## Introduction
 
 
-This repository contains the RASE prediction pipeline, which implements genomic
-neighbor typing for rapid inference of antibiotic resistance and
-susceptibility. For more information, see the associated
+This repository contains the RASE prediction pipeline for rapid inference of
+antibiotic resistance and susceptibility using genomic neighbor typing. For
+more information about the method and results, see the associated
 [paper](https://www.biorxiv.org/content/10.1101/403204v2) and [supplementary
 repository](https://github.com/c2-d2/rase-supplement).
 
@@ -23,22 +23,17 @@ sample and the pneumococcal database.
 After [install
 dependencies](https://github.com/c2-d2/rase/blob/master/environment.md), run
 the commands below. The entire computation should require
-approximately 6m on a standard laptop (MacBook Pro).
+approximately 6 minutes on a standard laptop (MacBook Pro).
 
 
 ```bash
 # clone and enter this repository
 git clone --recursive https://github.com/c2-d2/rase-pipeline
+# enter the directory
 cd rase-pipeline
-
-# download the S. pneumoniae database
-wget -P database https://github.com/c2-d2/rase-db-spneumoniae-sparc/releases/download/v1.3/spneumoniae-sparc.k18.{tsv,tar.gz}
-
-# download minion reads from a metagenomic experiment
-wget -P reads wget https://zenodo.org/record/1405173/files/sp10_norwich_P33.filtered.fq
-
-# run the pipeline
-make
+# run the pipeline on test data (S. pneumoniae database
+# and nanopore reads from a metagenomic experiment)
+make test
 ```
 
 
