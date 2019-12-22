@@ -117,8 +117,8 @@ rule all:
         ],
 
 rule database:
-	input:
-		[ancient(f"database/.{db}.complete") for db in databases]
+    input:
+        [ancient(f"database/.{db}.complete") for db in databases]
 
 
 rule test:
