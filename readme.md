@@ -1,6 +1,6 @@
 # RASE prediction pipeline
 
-| This repository contains the RASE pipeline for rapid inference of antibiotic resistance and susceptibility using genomic neighbor typing using RASE. Other components of the software include the [RASE core package](https://github.com/c2-d2/rase/) and the [RASE DB skeleton](https://github.com/c2-d2/rase-db-skeleton). For more information, see the [RASE paper](https://www.biorxiv.org/content/10.1101/403204v2) and the [RASE supplementary materials](https://github.com/c2-d2/rase-supplement/). |
+| This repository contains the RASE pipeline for rapid inference of antibiotic resistance and susceptibility using genomic neighbor typing using RASE. Other components of the software include the [core RASE package](https://github.com/c2-d2/rase/) and the [RASE DB skeleton](https://github.com/c2-d2/rase-db-skeleton). For more information, see the [RASE paper](https://www.biorxiv.org/content/10.1101/403204v2) and the [RASE supplementary materials](https://github.com/c2-d2/rase-supplement/). |
 |-|
 
 
