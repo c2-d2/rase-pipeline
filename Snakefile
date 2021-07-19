@@ -106,10 +106,10 @@ rule all:
         [
             [
                 [
-                    ancient(f"matching/.{e}.read.complete"),
-                    ancient(f"matching/.{e}__{db}.assign.complete"),
-                    ancient(f"prediction/.{e}__{db}.predict.complete"),
-                    ancient(f"plots/.{e}__{db}.plot.complete"),
+                    f"matching/.{e}.read.complete",
+                    f"matching/.{e}__{db}.assign.complete",
+                    f"prediction/.{e}__{db}.predict.complete",
+                    f"plots/.{e}__{db}.plot.complete",
                 ]
                 for db in databases
             ]
@@ -118,7 +118,7 @@ rule all:
 
 rule database:
     input:
-        [ancient(f"database/.{db}.complete") for db in databases]
+        [f"database/.{db}.complete" for db in databases]
 
 
 rule test:
@@ -126,9 +126,9 @@ rule test:
         [
             [
                 [
-                    ancient(f"matching/.{e}.read.complete"),
-                    ancient(f"prediction/.{e}__{db}.predict.complete"),
-                    ancient(f"plots/.{e}__{db}.plot.complete"),
+                    f"matching/.{e}.read.complete",
+                    f"prediction/.{e}__{db}.predict.complete",
+                    f"plots/.{e}__{db}.plot.complete",
                 ]
                 for db in [smallest_database]
             ]
@@ -139,7 +139,7 @@ rule test:
 for suffix in [f"{x}{y}" for x in ("fa", "fq", "fasta", "fastq") for y in ("", ".gz")]:
     rule:
         input:
-            reads=ancient("reads/{pref}."+suffix)
+            reads="reads/{pref}."+suffix
         output:
             t="matching/.{pref}.read.complete"
         params:
@@ -167,8 +167,8 @@ for suffix in [f"{x}{y}" for x in ("fa", "fq", "fasta", "fastq") for y in ("", "
 rule assign:
     priority: 60
     input:
-        ancient("database/.{index}.complete"),
-        ancient("matching/.{pref}.read.complete"),
+        "database/.{index}.complete",
+        "matching/.{pref}.read.complete",
     output:
         t="matching/.{pref}__{index}.assign.complete",
     params:
@@ -192,8 +192,8 @@ rule assign:
 rule predict:
     priority: 80
     input:
-        ancient("matching/.{pref}__{index}.assign.complete"),
-        ancient("database/.{index}.complete"),
+        "matching/.{pref}__{index}.assign.complete",
+        "database/.{index}.complete",
     output:
         t="prediction/.{pref}__{index}.predict.complete",
     params:
@@ -233,8 +233,8 @@ rule plot:
     output:
         t="plots/.{pref}__{index}.plot.complete",
     input:
-        t1=ancient("plots/.{pref}__{index}.plot_timeline.complete"),
-        t2=ancient("plots/.{pref}__{index}.plot_snapshots.complete"),
+        t1="plots/.{pref}__{index}.plot_timeline.complete",
+        t2="plots/.{pref}__{index}.plot_snapshots.complete",
     group:
         "group"
     shell:
@@ -247,8 +247,8 @@ rule plot_timeline:
     output:
         t="plots/.{pref}__{index}.plot_timeline.complete",
     input:
-        ancient("prediction/.{pref}__{index}.predict.complete"),
-        ancient("database/.{index}.complete"),
+        "prediction/.{pref}__{index}.predict.complete",
+        "database/.{index}.complete",
     group:
         "group"
     benchmark:
@@ -275,8 +275,8 @@ rule plot_snapshots:
     output:
         t="plots/.{pref}__{index}.plot_snapshots.complete",
     input:
-        ancient("prediction/.{pref}__{index}.predict.complete"),
-        ancient("database/.{index}.complete"),
+        "prediction/.{pref}__{index}.predict.complete",
+        "database/.{index}.complete",
     group:
         "group"
     benchmark:
@@ -298,8 +298,8 @@ rule decompress:
     output:
         t="database/.{index}.complete"
     input:
-        gz=ancient("database/{index}.tar.gz"),
-        tsv=ancient("database/{index}.tsv"),
+        gz="database/{index}.tar.gz",
+        tsv="database/{index}.tsv",
     benchmark:
         "benchmarks/decompress.{index}.log"
     shell:
