@@ -27,7 +27,7 @@
 This repository contains the RASE prediction pipeline for rapid inference of
 antibiotic resistance and susceptibility using genomic neighbor typing. For
 more information about the method and results, see the associated
-[paper](https://www.biorxiv.org/content/10.1101/403204v2) and [supplementary
+[paper](http://dx.doi.org/10.1038/s41564-019-0656-6) and [supplementary
 repository](https://github.com/c2-d2/rase-supplement).
 
 The entire pipeline is specified within a single
@@ -41,7 +41,7 @@ The following example predicts antibiotic resistance from a sputum metagenomic
 sample and the pneumococcal database.
 
 After [install
-dependencies](https://github.com/c2-d2/rase/blob/master/environment.md), run
+dependencies](environment.md), run
 the commands below. The entire computation should require
 approximately 6 minutes on a standard laptop (MacBook Pro).
 
@@ -70,7 +70,7 @@ make test
     ```
 
   or download it as a [single .tar.gz
-  file](https://github.com/c2-d2/rase-predict/archive/master.tar.gz).
+  file](https://github.com/c2-d2/rase-pipeline/archive/master.tar.gz).
 
 3) **Installing a RASE database.** A RASE database should be placed into
   `database/`.  Every database consists of two files: a compressed
