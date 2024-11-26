@@ -8,7 +8,7 @@
 
 SHELL=/usr/bin/env bash -eo pipefail
 
-SM=snakemake -j -p
+SM=snakemake -c all -p
 
 .SECONDARY:
 
